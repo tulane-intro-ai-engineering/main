@@ -29,49 +29,26 @@ We will:
 
 You only need to do this **once per machine** (per Drive clone). Afterward, the token is stored in the repo’s local git config in your Drive, and you won’t need to paste it again.
 
-Create or open an **instructor-only** notebook (e.g., `instructor_dev.ipynb`) in Colab. Run this cell:
+- Open the **instructor-only** notebook `instructor_dev.ipynb` in Colab.
+- Make a copy to your google drive (anywhere)
+- Edit the top cell to determine where to clone the repo into your google drive, set your name, etc.
+- Run the first two cells to clone the repo to google drive.
 
-```python
-# 🔧 ONE-TIME SETUP: mount Drive, clone repo into it, and set remote with PAT
 
-from google.colab import drive
-from pathlib import Path
-import getpass
+### 2. Editing class files
 
-# 1. Mount Google Drive
-drive.mount('/content/drive')
+To begin editing, launch your copy of `instructor_dev.ipynb` and run the section `🔧 Start of each session: mount & pull`. 
+This will mount the drive and pull latest updates.
 
-# 2. Choose where in Drive to store the repo
-BASE_DIR = Path("/content/drive/MyDrive/Teaching/IntroAIEngineering/github")
-BASE_DIR.mkdir(parents=True, exist_ok=True)
+Once you’ve pulled the latest changes, open notebooks directly from the Drive-backed clone:
 
-REPO_OWNER = "tulane-intro-ai-engineering"
-REPO_NAME = "main"
-REPO_DIR = BASE_DIR / REPO_NAME
-REPO_URL = f"https://github.com/{REPO_OWNER}/{REPO_NAME}.git"
+1. From drive, navigate to /content/drive/MyDrive/Teaching/IntroAIEngineering/github/main
+2. Click a notebook to open it in a new Colab tab.
+3. Edit cells, run, and test — you are editing the real file in the Git clone.
+4. When Colab autosaves (or when you press Ctrl+S), it writes directly into your Drive-backed repo.
 
-%cd {BASE_DIR}
+### 3. Committing & Pushing Changes Back to GitHub
 
-# 3. Clone the repo if it doesn't exist yet
-if REPO_DIR.exists():
-    print("Repo already exists at:", REPO_DIR)
-else:
-    print("Cloning repo...")
-    !git clone {REPO_URL} {REPO_DIR.name}
-    print("Cloned repo to:", REPO_DIR)
+When you’re done editing (could be multiple notebooks plus course_utils.py, etc.), go back to instructor_dev.ipynb and run the 
+`💾 Commit and push changes` block.
 
-# 4. Configure git remote with your PAT (only needed once per clone)
-%cd {REPO_DIR}
-
-print("\nCurrent remotes:")
-!git remote -v
-
-token = getpass.getpass("GitHub Personal Access Token (will be stored in local git config): ")
-
-remote_with_token = f"https://{token}@github.com/{REPO_OWNER}/{REPO_NAME}.git"
-!git remote set-url origin {remote_with_token}
-
-print("\nUpdated remotes:")
-!git remote -v
-
-print("\nOne-time setup complete. Future sessions only need the start-of-session cell.")
