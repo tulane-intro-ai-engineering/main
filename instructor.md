@@ -34,8 +34,9 @@ You only need to do this **once per machine** (per Drive clone). Afterward, the 
 - Edit the top cell to determine where to clone the repo into your google drive, set your name, etc.
 - Run the first two cells to clone the repo to google drive.
 
+---
 
-### 2. Editing class files
+## 2. Editing class files
 
 To begin editing, launch your copy of `instructor_dev.ipynb` and run the section `🔧 Start of each session: mount & pull`. 
 This will mount the drive and pull latest updates.
@@ -47,7 +48,9 @@ Once you’ve pulled the latest changes, open notebooks directly from the Drive-
 3. Edit cells, run, and test — you are editing the real file in the Git clone.
 4. When Colab autosaves (or when you press Ctrl+S), it writes directly into your Drive-backed repo.
 
-### 3. Committing & Pushing Changes Back to GitHub
+---
+
+## 3. Committing & Pushing Changes Back to GitHub
 
 When you’re done editing (could be multiple notebooks plus course_utils.py, etc.), go back to instructor_dev.ipynb and run the 
 `💾 Commit and push changes` block.
