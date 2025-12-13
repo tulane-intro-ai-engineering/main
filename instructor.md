@@ -29,8 +29,9 @@ We will:
 
 You only need to do this **once per machine** (per Drive clone). Afterward, the token is stored in the repo’s local git config in your Drive, and you won’t need to paste it again.
 
-- Open the **instructor-only** notebook `instructor_dev.ipynb` in Colab.
-- Make a copy to your google drive (anywhere)
+- Open the **instructor-only** notebook `instructor_dev.ipynb` in Colab. [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](
+https://colab.research.google.com/github/tulane-intro-ai-engineering/main/blob/main/instructor_dev.ipynb)
+- Make a copy to your google drive (anywhere; you'll need this copy outside the repo)
 - Edit the top cell to determine where to clone the repo into your google drive, set your name, etc.
 - Run the first two cells to clone the repo to google drive.
 
