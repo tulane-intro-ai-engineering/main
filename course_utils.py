@@ -243,6 +243,3 @@ def draw_llm_workflow_networkx(highlight=None, figsize=(12, 8)):
     plt.axis("off")
     plt.show()
 
-draw_llm_workflow_networkx(
-        highlight=["Prompt / Control", "LLM (Model)"]
-    )
