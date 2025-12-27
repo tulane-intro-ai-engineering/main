@@ -120,6 +120,99 @@ def lab1_build_demo(system_prompt: str, default_temperature: float = 0.7):
     return demo
 
 
+
+# ---------- Setup ----------
+def lab2_setup():
+    """
+    Setup for Lab 2: Temperature & Diversity.
+    - Verifies OpenAI client connectivity
+    - Loads scientific utilities (numpy, matplotlib)
+    - Provides a safe helper for model calls
+    - Prints confirmation banner
+    """
+    import sys, os, math, numpy as np
+    import matplotlib.pyplot as plt
+    install_core_deps()
+    seed_everything(42)
+    init_openai()
+
+    if '/content/main' not in sys.path:
+        sys.path.append('/content/main')
+        
+
+# ---------- Core Experiment ----------
+def lab2_generate_samples(prompt: str, temperatures=[0.3, 1.0, 2.0], n_per_temp=5, model="gpt-4o-mini"):
+    """
+    Generate multiple completions for a given prompt across temperature settings.
+    Returns a list of dicts with {temperature, output}.
+    """
+    results = []
+    for T in temperatures:
+        for i in range(n_per_temp):
+            try:
+                resp = client.chat.completions.create(
+                    model=model,
+                    temperature=T,
+                    messages=[{"role": "user", "content": prompt}],
+                )
+                output = resp.choices[0].message.content.strip()
+                results.append({
+                    "temperature": T,
+                    "output": output
+                })
+                time.sleep(0.2)
+            except Exception as e:
+                print(f"⚠️ API call failed at T={T}, sample {i+1}: {e}")
+    return results
+
+
+# ---------- Diversity Measurement ----------
+def lab2_measure_diversity(results):
+    """
+    Compute a simple diversity index per temperature group.
+    Metric: unique outputs / total outputs (per temperature).
+    """
+    diversity_scores = {}
+    grouped = {}
+    for r in results:
+        grouped.setdefault(r["temperature"], []).append(r["output"])
+
+    for T, outputs in grouped.items():
+        unique_count = len(set(outputs))
+        total_count = len(outputs)
+        diversity = round(unique_count / total_count, 3) if total_count else 0
+        diversity_scores[T] = diversity
+    return diversity_scores
+
+
+# ---------- Gradio Demo ----------
+def lab2_build_demo(default_prompt="Describe a sunrise.", default_temperature=1.0):
+    """
+    Build a simple Gradio app for interactive temperature exploration.
+    """
+    def generate(prompt, temperature):
+        try:
+            resp = client.chat.completions.create(
+                model="gpt-4o-mini",
+                temperature=temperature,
+                messages=[{"role": "user", "content": prompt}],
+            )
+            return resp.choices[0].message.content
+        except Exception as e:
+            return f"⚠️ Error: {e}"
+
+    demo = gr.Interface(
+        fn=generate,
+        inputs=[
+            gr.Textbox(value=default_prompt, label="Prompt"),
+            gr.Slider(0.0, 2.0, value=default_temperature, label="Temperature")
+        ],
+        outputs="text",
+        title="Lab 2 — Temperature Explorer",
+        description="Experiment with LLM temperature: low = consistent, high = creative.",
+    )
+    return demo
+
 def lab2_setup():
     """
     Setup for Lab 2: Temperature & Diversity.
