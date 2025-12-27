@@ -215,6 +215,7 @@ def lab2_build_demo(default_prompt="Describe a sunrise.", default_temperature=1.
     """
     Build a simple Gradio app for interactive temperature exploration.
     """
+    client = OpenAI()
     def generate(prompt, temperature):
         try:
             resp = client.chat.completions.create(
