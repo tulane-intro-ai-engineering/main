@@ -5,6 +5,12 @@ import random
 from pathlib import Path
 
 import numpy as np
+from openai import OpenAI
+import os
+import sys
+import getpass
+import subprocess
+
 
 # If you already have a seed function, reuse it.
 def seed_everything(seed: int = 42) -> None:
@@ -12,20 +18,8 @@ def seed_everything(seed: int = 42) -> None:
     np.random.seed(seed)
 
 
-def colab_bootstrap_lab1() -> None:
-    """
-    Colab-specific bootstrap for Lab 1.
-
-    - Installs required packages if needed.
-    - Seeds randomness.
-    - Prompts for OPENAI_API_KEY if not set.
-    """
-    import os
-    import sys
-    import getpass
-    import subprocess
-
-    # Install deps quietly if missing
+# Install deps quietly if missing
+def install_core_deps():
     for pkg in ["openai", "gradio"]:
         try:
             __import__(pkg)
@@ -34,9 +28,7 @@ def colab_bootstrap_lab1() -> None:
                 [sys.executable, "-m", "pip", "install", "-q", pkg],
                 check=True,
             )
-
-    seed_everything(42)
-
+def init_openai():
     # Ask for API key if not present
     if not os.environ.get("OPENAI_API_KEY"):
         print("Enter your OpenAI API key. It will only live in this Colab runtime.")
@@ -45,6 +37,18 @@ def colab_bootstrap_lab1() -> None:
     else:
         print("✅ OPENAI_API_KEY already set.")
 
+
+def lab1_setup() -> None:
+    """
+    Colab-specific bootstrap for Lab 1.
+
+    - Installs required packages if needed.
+    - Seeds randomness.
+    - Prompts for OPENAI_API_KEY if not set.
+    """
+    install_core_deps()
+    seed_everything(42)
+    init_openai()
     print("✅ colab_bootstrap_lab1: environment ready.")
 
 
@@ -54,10 +58,7 @@ EXAMPLE_LAB1_PROMPTS = [
     "What is one cool application of AI?",
 ]
 
-
 # ---------- Lab 1 LLM helpers ----------
-
-from openai import OpenAI
 
 def _lab1_client() -> OpenAI:
     """Return an OpenAI client. Assumes OPENAI_API_KEY is set."""
@@ -119,7 +120,7 @@ def lab1_build_demo(system_prompt: str, default_temperature: float = 0.7):
     return demo
 
 
-def LAB2_colab_bootstrap():
+def lab2_setup():
     """
     Setup for Lab 2: Temperature & Diversity.
     - Verifies OpenAI client connectivity
@@ -129,18 +130,12 @@ def LAB2_colab_bootstrap():
     """
     import sys, os, math, numpy as np
     import matplotlib.pyplot as plt
+    install_core_deps()
+    seed_everything(42)
+    init_openai()
 
     if '/content/main' not in sys.path:
         sys.path.append('/content/main')
-
-    try:
-        from openai import OpenAI
-        client = OpenAI()
-        print("✅ OpenAI client initialized successfully!")
-    except Exception as e:
-        print("⚠️ Warning: Could not initialize OpenAI client. Check your environment.")
-        print(e)
-        return
 
     # Define a small helper for consistent API experiments
     def run_prompt(prompt, temperature=1.0, model="gpt-4o-mini"):
