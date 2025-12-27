@@ -117,3 +117,49 @@ def lab1_build_demo(system_prompt: str, default_temperature: float = 0.7):
         description="Your first LLM-powered web app.",
     )
     return demo
+
+
+def LAB2_colab_bootstrap():
+    """
+    Setup for Lab 2: Temperature & Diversity.
+    - Verifies OpenAI client connectivity
+    - Loads scientific utilities (numpy, matplotlib)
+    - Provides a safe helper for model calls
+    - Prints confirmation banner
+    """
+    import sys, os, math, numpy as np
+    import matplotlib.pyplot as plt
+
+    if '/content/main' not in sys.path:
+        sys.path.append('/content/main')
+
+    try:
+        from openai import OpenAI
+        client = OpenAI()
+        print("✅ OpenAI client initialized successfully!")
+    except Exception as e:
+        print("⚠️ Warning: Could not initialize OpenAI client. Check your environment.")
+        print(e)
+        return
+
+    # Define a small helper for consistent API experiments
+    def run_prompt(prompt, temperature=1.0, model="gpt-4o-mini"):
+        """
+        Simple helper to send a prompt and return text + token stats.
+        """
+        try:
+            resp = client.chat.completions.create(
+                model=model,
+                temperature=temperature,
+                messages=[{"role": "user", "content": prompt}]
+            )
+            text = resp.choices[0].message.content
+            tokens = resp.usage.total_tokens
+            print(f"[T={temperature}] Tokens: {tokens}")
+            return text
+        except Exception as e:
+            print("API call failed:", e)
+            return None
+
+    globals()["run_prompt"] = run_prompt  # expose helper globally
+    print("✅ LAB2_colab_bootstrap complete — scientific libraries ready, helper function loaded.")
