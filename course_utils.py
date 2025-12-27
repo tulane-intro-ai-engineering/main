@@ -138,7 +138,29 @@ def lab2_setup():
 
     if '/content/main' not in sys.path:
         sys.path.append('/content/main')
-        
+
+    # Define a small helper for consistent API experiments
+    def run_prompt(prompt, temperature=1.0, model="gpt-4o-mini"):
+        """
+        Simple helper to send a prompt and return text + token stats.
+        """
+        try:
+            resp = client.chat.completions.create(
+                model=model,
+                temperature=temperature,
+                messages=[{"role": "user", "content": prompt}]
+            )
+            text = resp.choices[0].message.content
+            tokens = resp.usage.total_tokens
+            print(f"[T={temperature}] Tokens: {tokens}")
+            return text
+        except Exception as e:
+            print("API call failed:", e)
+            return None
+
+    globals()["run_prompt"] = run_prompt  # expose helper globally
+    print("✅ LAB2_colab_bootstrap complete — scientific libraries ready, helper function loaded.")
+
 
 # ---------- Core Experiment ----------
 def lab2_generate_samples(prompt: str, temperatures=[0.3, 1.0, 2.0], n_per_temp=5, model="gpt-4o-mini"):
@@ -146,6 +168,7 @@ def lab2_generate_samples(prompt: str, temperatures=[0.3, 1.0, 2.0], n_per_temp=
     Generate multiple completions for a given prompt across temperature settings.
     Returns a list of dicts with {temperature, output}.
     """
+    client = OpenAI()
     results = []
     for T in temperatures:
         for i in range(n_per_temp):
@@ -213,41 +236,3 @@ def lab2_build_demo(default_prompt="Describe a sunrise.", default_temperature=1.
     )
     return demo
 
-def lab2_setup():
-    """
-    Setup for Lab 2: Temperature & Diversity.
-    - Verifies OpenAI client connectivity
-    - Loads scientific utilities (numpy, matplotlib)
-    - Provides a safe helper for model calls
-    - Prints confirmation banner
-    """
-    import sys, os, math, numpy as np
-    import matplotlib.pyplot as plt
-    install_core_deps()
-    seed_everything(42)
-    init_openai()
-
-    if '/content/main' not in sys.path:
-        sys.path.append('/content/main')
-
-    # Define a small helper for consistent API experiments
-    def run_prompt(prompt, temperature=1.0, model="gpt-4o-mini"):
-        """
-        Simple helper to send a prompt and return text + token stats.
-        """
-        try:
-            resp = client.chat.completions.create(
-                model=model,
-                temperature=temperature,
-                messages=[{"role": "user", "content": prompt}]
-            )
-            text = resp.choices[0].message.content
-            tokens = resp.usage.total_tokens
-            print(f"[T={temperature}] Tokens: {tokens}")
-            return text
-        except Exception as e:
-            print("API call failed:", e)
-            return None
-
-    globals()["run_prompt"] = run_prompt  # expose helper globally
-    print("✅ LAB2_colab_bootstrap complete — scientific libraries ready, helper function loaded.")
