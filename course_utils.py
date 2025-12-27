@@ -1,14 +1,15 @@
 # course_utils.py
 
 from __future__ import annotations
-import random
-from pathlib import Path
 
+import getpass
+import gradio as gr
 import numpy as np
 from openai import OpenAI
 import os
+from pathlib import Path
+import random
 import sys
-import getpass
 import subprocess
 import time
 
