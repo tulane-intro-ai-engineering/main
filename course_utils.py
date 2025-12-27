@@ -120,126 +120,126 @@ def lab1_build_demo(system_prompt: str, default_temperature: float = 0.7):
 
 
 
-import matplotlib.pyplot as plt
-import networkx as nx
+# import matplotlib.pyplot as plt
+# import networkx as nx
 
-def draw_llm_workflow_networkx(highlight=None, figsize=(12, 8)):
-    """
-    Draw the LLM workflow using NetworkX with:
-    - dynamic node sizing based on label length
-    - optional highlighting of selected nodes
+# def draw_llm_workflow_networkx(highlight=None, figsize=(12, 8)):
+#     """
+#     Draw the LLM workflow using NetworkX with:
+#     - dynamic node sizing based on label length
+#     - optional highlighting of selected nodes
 
-    Parameters
-    ----------
-    highlight : list[str] or None
-        List of node labels to highlight. All others will be faded.
-    figsize : tuple
-        Figure size in inches
-    """
-    if highlight is None:
-        highlight = []
+#     Parameters
+#     ----------
+#     highlight : list[str] or None
+#         List of node labels to highlight. All others will be faded.
+#     figsize : tuple
+#         Figure size in inches
+#     """
+#     if highlight is None:
+#         highlight = []
 
-    # Graph definition
-    G = nx.DiGraph()
+#     # Graph definition
+#     G = nx.DiGraph()
 
-    nodes = [
-        "Users",
-        "Input Handling",
-        "Prompt / Control",
-        "Tools / Functions?",
-        "Retrieval (RAG)?",
-        "LLM (Model)",
-        "Output Processing",
-        "Final Output",
-        "Logging & Monitoring",
-    ]
+#     nodes = [
+#         "Users",
+#         "Input Handling",
+#         "Prompt / Control",
+#         "Tools / Functions?",
+#         "Retrieval (RAG)?",
+#         "LLM (Model)",
+#         "Output Processing",
+#         "Final Output",
+#         "Logging & Monitoring",
+#     ]
 
-    edges = [
-        ("Users", "Input Handling"),
-        ("Input Handling", "Prompt / Control"),
-        ("Prompt / Control", "Tools / Functions?"),
-        ("Prompt / Control", "Retrieval (RAG)?"),
-        ("Tools / Functions?", "LLM (Model)"),
-        ("Retrieval (RAG)?", "LLM (Model)"),
-        ("LLM (Model)", "Output Processing"),
-        ("Output Processing", "Final Output"),
-        ("Final Output", "Logging & Monitoring"),
-    ]
+#     edges = [
+#         ("Users", "Input Handling"),
+#         ("Input Handling", "Prompt / Control"),
+#         ("Prompt / Control", "Tools / Functions?"),
+#         ("Prompt / Control", "Retrieval (RAG)?"),
+#         ("Tools / Functions?", "LLM (Model)"),
+#         ("Retrieval (RAG)?", "LLM (Model)"),
+#         ("LLM (Model)", "Output Processing"),
+#         ("Output Processing", "Final Output"),
+#         ("Final Output", "Logging & Monitoring"),
+#     ]
 
-    G.add_nodes_from(nodes)
-    G.add_edges_from(edges)
-    SPACING_X = 3.2
-    SPACING_Y = .1
-    # Manual layout (top-down)
-    pos = {
-        "Users": (0 * SPACING_X, 0),
-        "Input Handling": (1 * SPACING_X, 0),
-        "Prompt / Control": (2 * SPACING_X, 0),
-        "Tools / Functions?": (3 * SPACING_X, 1 * SPACING_Y),
-        "Retrieval (RAG)?": (3 * SPACING_X, -1 * SPACING_Y),
-        "LLM (Model)": (4.5 * SPACING_X, 0),
-        "Output Processing": (5.5 * SPACING_X, 0),
-        "Final Output": (6.5 * SPACING_X, 0),
-        "Logging & Monitoring": (7.5 * SPACING_X, 0),
-    }
+#     G.add_nodes_from(nodes)
+#     G.add_edges_from(edges)
+#     SPACING_X = 3.2
+#     SPACING_Y = .1
+#     # Manual layout (top-down)
+#     pos = {
+#         "Users": (0 * SPACING_X, 0),
+#         "Input Handling": (1 * SPACING_X, 0),
+#         "Prompt / Control": (2 * SPACING_X, 0),
+#         "Tools / Functions?": (3 * SPACING_X, 1 * SPACING_Y),
+#         "Retrieval (RAG)?": (3 * SPACING_X, -1 * SPACING_Y),
+#         "LLM (Model)": (4.5 * SPACING_X, 0),
+#         "Output Processing": (5.5 * SPACING_X, 0),
+#         "Final Output": (6.5 * SPACING_X, 0),
+#         "Logging & Monitoring": (7.5 * SPACING_X, 0),
+#     }
 
 
-    node_sizes = []
-    node_colors = []
-    node_alphas = []
+#     node_sizes = []
+#     node_colors = []
+#     node_alphas = []
 
-    for n in G.nodes():
-        # Dynamic size based on label length
-        size = 1200 + len(n) * 260
-        node_sizes.append(size)
+#     for n in G.nodes():
+#         # Dynamic size based on label length
+#         size = 1200 + len(n) * 260
+#         node_sizes.append(size)
 
-        # Color by type
-        if "?" in n:
-            color = "#f4a261"
-        elif n == "Users":
-            color = "#bdbdbd"
-        else:
-            color = "#4db6e2"
-        node_colors.append(color)
+#         # Color by type
+#         if "?" in n:
+#             color = "#f4a261"
+#         elif n == "Users":
+#             color = "#bdbdbd"
+#         else:
+#             color = "#4db6e2"
+#         node_colors.append(color)
 
-        # Highlight logic
-        if highlight and n not in highlight:
-            node_alphas.append(0.25)
-        else:
-            node_alphas.append(1.0)
+#         # Highlight logic
+#         if highlight and n not in highlight:
+#             node_alphas.append(0.25)
+#         else:
+#             node_alphas.append(1.0)
 
-    plt.figure(figsize=figsize)
+#     plt.figure(figsize=figsize)
 
-    # Draw nodes individually to support per-node alpha
-    for i, node in enumerate(G.nodes()):
-        nx.draw_networkx_nodes(
-            G,
-            pos,
-            nodelist=[node],
-            node_size=node_sizes[i],
-            node_color=node_colors[i],
-            alpha=node_alphas[i],
-        )
+#     # Draw nodes individually to support per-node alpha
+#     for i, node in enumerate(G.nodes()):
+#         nx.draw_networkx_nodes(
+#             G,
+#             pos,
+#             nodelist=[node],
+#             node_size=node_sizes[i],
+#             node_color=node_colors[i],
+#             alpha=node_alphas[i],
+#         )
 
-    # Draw edges
-    nx.draw_networkx_edges(
-        G,
-        pos,
-        arrows=True,
-        arrowsize=22,
-        edge_color="black",
-        alpha=0.8,
-    )
+#     # Draw edges
+#     nx.draw_networkx_edges(
+#         G,
+#         pos,
+#         arrows=True,
+#         arrowsize=22,
+#         edge_color="black",
+#         alpha=0.8,
+#     )
 
-    # Draw labels
-    nx.draw_networkx_labels(
-        G,
-        pos,
-        font_size=9,
-        font_weight="bold",
-    )
+#     # Draw labels
+#     nx.draw_networkx_labels(
+#         G,
+#         pos,
+#         font_size=9,
+#         font_weight="bold",
+#     )
 
-    plt.title("LLM System", fontsize=15, weight="bold")
-    plt.axis("off")
-    plt.show()
+#     plt.title("LLM System", fontsize=15, weight="bold")
+#     plt.axis("off")
+#     plt.show()
 
