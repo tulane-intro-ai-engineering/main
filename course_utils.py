@@ -12,6 +12,7 @@ import random
 import sys
 import subprocess
 import time
+from mermaid import Mermaid
 
 
 # If you already have a seed function, reuse it.
@@ -46,7 +47,7 @@ def init_openai():
 
 def show_mermaid(graph_str):
     display(Mermaid(graph_str))
-    
+
 def lab1_setup() -> None:
     """
     Colab-specific bootstrap for Lab 1.
