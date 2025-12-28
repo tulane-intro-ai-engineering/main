@@ -4,7 +4,7 @@
 
 ## 1. Overview
 
-Over the semester, you will work in a small team (up to 2 students) to design, build, and study a **practical AI-powered system** using tools from this course:
+Over the semester, you will work in a small team (up to 2 students; grads solo) to design, build, and study a **practical AI-powered system** using tools from this course:
 
 - LLMs via APIs 
 - Colab notebooks
@@ -330,4 +330,5 @@ Total project score: **100 points**, broken down as follows.
 
 If you have questions at any point about scope, feasibility, or grading, **please ask early**.  
 I’m happy to help you shape an idea into something that’s both **interesting** and **doable** within the semester.
+
 
