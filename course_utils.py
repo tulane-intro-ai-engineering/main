@@ -260,7 +260,7 @@ def lab3_setup():
     _install(["dspy"])
     seed_everything(42)
     init_openai()
-
+    import dspy
     if '/content/main' not in sys.path:
         sys.path.append('/content/main')
 
