@@ -266,3 +266,132 @@ def lab3_setup():
 
     print("✅ lab3_setup complete — scientific libraries ready, helper function loaded.")
 
+
+# ----------------------------------------------------------
+# Lab 3: Safe Run Helper
+# ----------------------------------------------------------
+def safe_run_demo(text: str):
+    """
+    Demonstrate error handling and logging for pipeline steps.
+    Simulates three possible outcomes:
+    - Valid input: returns success dictionary.
+    - Empty input: raises ValueError.
+    - 'simulate_error': raises RuntimeError.
+    """
+    try:
+        if not text:
+            raise ValueError("Empty input text")
+        if "simulate_error" in text.lower():
+            raise RuntimeError("Simulated model crash")
+
+        return {"status": "ok", "message": "All pipeline steps succeeded"}
+
+    except Exception as e:
+        print(f"⚠️ Error in pipeline step: {e}")
+        return None
+
+
+# ----------------------------------------------------------
+# Lab 3: Sentiment Pipeline Builder
+# ----------------------------------------------------------
+def build_sentiment_pipeline_demo(verbose: bool = False):
+    """
+    Build a simple three-step DSPY pipeline:
+      1. Extract sentences about Tulane University
+      2. Annotate each sentence with sentiment (pos/neg/neutral)
+      3. Summarize overall sentiment
+
+    If verbose=True, prints intermediate steps for transparency.
+    """
+
+    extract = dspy.Predict("text -> sentences_about_tulane: list[str]")
+    annotate = dspy.Predict("sentence -> sentiment: str")
+    summarize = dspy.Predict("sentiments: list[str] -> summary: str")
+
+    def pipeline(text: str):
+        try:
+            # Step 1: Extract sentences mentioning Tulane
+            extraction_result = extract(text=text)
+            sentences = getattr(extraction_result, "sentences_about_tulane", [])
+            if verbose:
+                print("🟢 Extracted Sentences:", sentences)
+
+            # Step 2: Annotate sentiment
+            labels = []
+            for s in sentences:
+                sentiment_result = annotate(sentence=s)
+                sentiment = getattr(sentiment_result, "sentiment", "unknown")
+                labels.append(sentiment)
+                if verbose:
+                    print(f"🟣 Sentiment for '{s[:50]}...': {sentiment}")
+
+            # Step 3: Summarize
+            summary_result = summarize(sentiments=labels)
+            summary = getattr(summary_result, "summary", "")
+            if verbose:
+                print("🧩 Final Summary:", summary)
+
+            return summary
+
+        except Exception as e:
+            print(f"⚠️ Pipeline failed: {e}")
+            return "⚠️ Pipeline encountered an error."
+
+    return pipeline
+
+
+# ----------------------------------------------------------
+# Lab 3: Single-Prompt Comparison Function
+# ----------------------------------------------------------
+def single_prompt_sentiment_summary(article: str) -> str:
+    """
+    Single-prompt approach for comparison:
+    Asks the LLM to read the entire article and summarize the sentiment
+    about Tulane University in one go.
+    """
+    try:
+        client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are a helpful analyst of university sentiment.",
+                },
+                {
+                    "role": "user",
+                    "content": f"Analyze this article and summarize the overall sentiment about Tulane University:\n{article}",
+                },
+            ],
+            temperature=0.7,
+        )
+
+        return response.choices[0].message.content.strip()
+
+    except Exception as e:
+        print(f"⚠️ Single-prompt call failed: {e}")
+        return "⚠️ Error running single-prompt model."
+
+
+# ----------------------------------------------------------
+# Lab 3: Optional: Simple Gradio Demo Builder
+# ----------------------------------------------------------
+def lab3_build_demo():
+    """
+    Optional Gradio interface for interactive exploration.
+    Lets students input an article and see the pipeline outputs.
+    """
+
+    pipeline = build_sentiment_pipeline_demo(verbose=True)
+
+    def run_pipeline(article):
+        return pipeline(article)
+
+    with gr.Blocks() as demo:
+        gr.Markdown("### 🧠 DSPY Sentiment Pipeline Explorer")
+        inp = gr.Textbox(label="Article Text", placeholder="Paste text mentioning Tulane University")
+        out = gr.Textbox(label="Pipeline Output (Summary)")
+        btn = gr.Button("Run Pipeline")
+        btn.click(run_pipeline, inputs=inp, outputs=out)
+    return demo
