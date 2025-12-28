@@ -19,10 +19,8 @@ def seed_everything(seed: int = 42) -> None:
     random.seed(seed)
     np.random.seed(seed)
 
-
-# Install deps quietly if missing
-def install_core_deps():
-    for pkg in ["openai", "gradio"]:
+def _install(deps):
+    for pkg in deps:
         try:
             __import__(pkg)
         except ImportError:
@@ -30,6 +28,12 @@ def install_core_deps():
                 [sys.executable, "-m", "pip", "install", "-q", pkg],
                 check=True,
             )
+
+# Install deps quietly if missing
+def install_core_deps():
+    _install(["openai", "gradio"])
+
+
 def init_openai():
     # Ask for API key if not present
     if not os.environ.get("OPENAI_API_KEY"):
@@ -51,7 +55,7 @@ def lab1_setup() -> None:
     install_core_deps()
     seed_everything(42)
     init_openai()
-    print("✅ colab_bootstrap_lab1: environment ready.")
+    print("✅ lab1_setup: environment ready.")
 
 
 EXAMPLE_LAB1_PROMPTS = [
@@ -161,7 +165,7 @@ def lab2_setup():
             return None
 
     globals()["run_prompt"] = run_prompt  # expose helper globally
-    print("✅ LAB2_colab_bootstrap complete — scientific libraries ready, helper function loaded.")
+    print("✅ lab2_setup complete — scientific libraries ready, helper function loaded.")
 
 
 # ---------- Core Experiment ----------
@@ -238,4 +242,22 @@ def lab2_build_demo(default_prompt="Describe a sunrise.", default_temperature=1.
         description="Experiment with LLM temperature: low = consistent, high = creative.",
     )
     return demo
+
+
+# ---------- LAB 3 Setup ----------
+def lab3_setup():
+    """
+    Setup for Lab 3
+    """
+    import sys, os, math, numpy as np
+    import matplotlib.pyplot as plt
+    install_core_deps()
+    _install(["dspy"])
+    seed_everything(42)
+    init_openai()
+
+    if '/content/main' not in sys.path:
+        sys.path.append('/content/main')
+
+     print("✅ lab3_setup complete — scientific libraries ready, helper function loaded.")
 
