@@ -87,7 +87,7 @@ Your final project must:
 
 **Note:** The exact due dates will be posted in the syllabus/LMS. Here is the structure:
 
-### PM1 – Project Proposal ~Week 3)
+### PM1 – Project Proposal (Week 3)
 
 **Deliverable (~1 page, markdown or PDF):**
 
@@ -129,9 +129,9 @@ Include a short markdown cell in the notebook:
 
 ### PM3 – GenAI Ops Experiment (Week 11)
 
-**Deliverable: experiment + 2–3 paragraph writeup**
+**Deliverable: experiment + 5–6 paragraph writeup**
 
-You will run **one small experiment** on your system using the scientific process:
+You will run **three small experiments** on your system using the scientific process:
 
 1. **Question**  
    - Example: “If we add RAG, how does answer correctness change?”  
@@ -165,7 +165,7 @@ You will run **one small experiment** on your system using the scientific proces
 You will include:
 
 - A section in your notebook where you run this experiment.
-- A short written summary (2–3 paragraphs) in your project report draft or a separate markdown cell.
+- A short written summary (5–6 paragraphs) in your project report draft or a separate markdown cell.
 
 ---
 
@@ -204,7 +204,7 @@ You will include:
    - **6. Future Work**
      - If you had 4 more weeks, what would you improve?
 
-3. **In-class presentation/demo (5–8 minutes)**
+3. **In-class presentation/demo (5 minutes)**
 
    - Introduce the **problem & user** in plain language.
    - Show your **system diagram** and main components.
@@ -248,8 +248,7 @@ You are encouraged to pick **something you actually care about**.
 
 ## 6. Constraints & Logistics
 
-- **Team size:** 2–3 students.  
-  - Solo projects allowed only with instructor approval.
+- **Team size:** 2 students (grad students solo)
 - **Tech stack:**
   - Code: Python in Colab.
   - UI: Gradio.
@@ -331,3 +330,4 @@ Total project score: **100 points**, broken down as follows.
 
 If you have questions at any point about scope, feasibility, or grading, **please ask early**.  
 I’m happy to help you shape an idea into something that’s both **interesting** and **doable** within the semester.
+
