@@ -259,5 +259,5 @@ def lab3_setup():
     if '/content/main' not in sys.path:
         sys.path.append('/content/main')
 
-     print("✅ lab3_setup complete — scientific libraries ready, helper function loaded.")
+    print("✅ lab3_setup complete — scientific libraries ready, helper function loaded.")
 
