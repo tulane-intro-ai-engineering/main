@@ -258,7 +258,6 @@ You are encouraged to pick **something you actually care about**.
   - You should adapt lab patterns (RAG, agents, eval, guardrails) to your project.
 - **Data:**
   - Use only data that is legal and appropriate to use.
-  - No scraping sites that prohibit it.
   - No sensitive personal data.
 
 If you are unsure whether your idea is in scope or allowed, ask the instructor early.
@@ -294,7 +293,7 @@ Total project score: **100 points**, broken down as follows.
 | Criterion                                          | Excellent (23–25)                                                                 | Good (17–22)                                                        | Needs Work (0–16)                                                                 |
 |---------------------------------------------------|------------------------------------------------------------------------------------|----------------------------------------------------------------------|------------------------------------------------------------------------------------|
 | Scientific framing (Question & Hypothesis)        | Clear question and thoughtful hypothesis grounded in course concepts.              | Question/hypothesis present but somewhat vague or shallow.            | Missing or very unclear question and/or hypothesis.                               |
-| Experiment design (PM3)                           | Controlled experiment (change 1 variable), appropriate test set, clear procedure.  | Somewhat controlled experiment; test set is small or uneven.         | Uncontrolled comparison; unclear how results were produced.                       |
+| Experiment design (PM3)                           | Controlled experiments (change 1 variable at a time), appropriate test set, clear procedure.  | Somewhat controlled experiment; test set is small or uneven.         | Uncontrolled comparison; unclear how results were produced.                       |
 | Metrics & measurement                             | At least one meaningful metric is used; appropriate for the question.              | Metric is used but could be better chosen or explained.              | No real metric, or metric does not match the question.                            |
 | Analysis & conclusion                             | Results are interpreted thoughtfully; discrepancies with hypothesis are discussed. | Results are stated but analysis is brief or superficial.             | Little or no interpretation beyond “X is higher than Y”.                          |
 
@@ -330,5 +329,6 @@ Total project score: **100 points**, broken down as follows.
 
 If you have questions at any point about scope, feasibility, or grading, **please ask early**.  
 I’m happy to help you shape an idea into something that’s both **interesting** and **doable** within the semester.
+
 
 
