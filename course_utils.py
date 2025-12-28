@@ -303,7 +303,7 @@ def build_sentiment_pipeline_demo(verbose: bool = False):
 
     If verbose=True, prints intermediate steps for transparency.
     """
-
+    import dspy
     extract = dspy.Predict("text -> sentences_about_tulane: list[str]")
     annotate = dspy.Predict("sentence -> sentiment: str")
     summarize = dspy.Predict("sentiments: list[str] -> summary: str")
