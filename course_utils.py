@@ -31,7 +31,7 @@ def _install(deps):
 
 # Install deps quietly if missing
 def install_core_deps():
-    _install(["openai", "gradio"])
+    _install(["openai", "gradio", "mermaid-python"])
 
 
 def init_openai():
@@ -44,6 +44,9 @@ def init_openai():
         print("✅ OPENAI_API_KEY already set.")
 
 
+def show_mermaid(graph_str):
+    display(Mermaid(graph_str))
+    
 def lab1_setup() -> None:
     """
     Colab-specific bootstrap for Lab 1.
