@@ -341,44 +341,41 @@ def lab4_generate_visualization(texts, model="text-embedding-3-small"):
 
 
 
-def lab4_build_search_demo():
+def lab4_build_search_demo(search_fn, docs=None):
     """
-    Build a Gradio demo where students can interactively compare
-    keyword-based and semantic search results side-by-side.
+    Build the interactive Gradio demo for Lab 4.
+
+    Args:
+        search_fn: function(query, docs) -> list of results (required)
+        docs: list of text documents to search (optional)
     """
-    import gradio as gr
 
-    example_docs = [
-        "Tulane University is located in New Orleans.",
-        "The Mississippi River runs through Louisiana.",
-        "Crawfish season peaks in early spring.",
-        "AI models learn from data patterns, not logic rules.",
-        "Jazz music was born in New Orleans.",
-    ]
+    if docs is None:
+        docs = [
+            "Tulane University is located in New Orleans.",
+            "Jazz music was born in New Orleans.",
+            "Crawfish season peaks in early spring.",
+            "AI models learn from data patterns, not logic rules.",
+        ]
 
-    def search_interface(query):
-        kw_results = simple_keyword_search(query, example_docs)
-        sem_results = semantic_search(query, example_docs)
-
-        kw_text = "\n".join([f"- {r}" for r in kw_results])
-        sem_text = "\n".join([f"- {r}" for r in sem_results])
-
-        return kw_text, sem_text
+    def run_search(query):
+        if not query.strip():
+            return "Please enter a query."
+        try:
+            results = search_fn(query, docs)
+            if isinstance(results, (list, tuple)):
+                return "\n\n".join(results[:3])
+            else:
+                return str(results)
+        except Exception as e:
+            return f"⚠️ Error in search function: {e}"
 
     demo = gr.Interface(
-        fn=search_interface,
-        inputs=gr.Textbox(label="Enter your query:"),
-        outputs=[
-            gr.Textbox(label="Keyword Search Results"),
-            gr.Textbox(label="Semantic Search Results")
-        ],
-        title="🔎 Compare Keyword vs Semantic Search",
-        description="Type a query and compare how keyword matching and semantic embeddings differ.",
-        examples=[
-            ["tulane"],
-            ["music in Louisiana"],
-            ["AI and learning"],
-            ["river"],
-        ],
+        fn=run_search,
+        inputs=gr.Textbox(label="Enter a query:"),
+        outputs=gr.Textbox(label="Top results"),
+        title="Lab 4 – Semantic Search Explorer",
+        description="Run your own semantic search implementation interactively.",
     )
+
     return demo
