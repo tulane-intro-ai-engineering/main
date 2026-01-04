@@ -488,6 +488,33 @@ def lab5_generate_answer(query: str, context: str, model: str = "gpt-4o-mini", m
         return "I don’t know based on the given context."
 
 
+def get_text_embedding(text: str, model: str = "text-embedding-3-small"):
+    """
+    Compute an embedding vector for the given text using the OpenAI API.
+
+    Args:
+        text (str): input text to embed
+        model (str): embedding model (default: text-embedding-3-small)
+
+    Returns:
+        np.ndarray: normalized embedding vector
+    """
+    try:
+        response = openai.Embedding.create(
+            input=text,
+            model=model
+        )
+        vec = np.array(response["data"][0]["embedding"], dtype=np.float32)
+        # Normalize to unit length for cosine similarity
+        vec = vec / np.linalg.norm(vec)
+        return vec
+    except Exception as e:
+        print("⚠️ Embedding call failed, returning random vector for fallback.")
+        np.random.seed(abs(hash(text)) % (2**32))
+        vec = np.random.rand(1536)
+        vec = vec / np.linalg.norm(vec)
+        return vec
+        
 # -----------------------------
 # 🧩 Gradio Demo Builder
 # -----------------------------
