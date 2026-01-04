@@ -282,131 +282,103 @@ def lab3_build_demo(verbose: bool = False):
         description="Interactive demo for Lab 3: Sentiment analysis about Tulane University.",
     )
     return demo
-# ----------------------------------------------------------
-# Lab 3: Safe Run Helper
-# ----------------------------------------------------------
-# def safe_run_demo(text: str):
-#     """
-#     Demonstrate error handling and logging for pipeline steps.
-#     Simulates three possible outcomes:
-#     - Valid input: returns success dictionary.
-#     - Empty input: raises ValueError.
-#     - 'simulate_error': raises RuntimeError.
-#     """
-#     try:
-#         if not text:
-#             raise ValueError("Empty input text")
-#         if "simulate_error" in text.lower():
-#             raise RuntimeError("Simulated model crash")
-
-#         return {"status": "ok", "message": "All pipeline steps succeeded"}
-
-#     except Exception as e:
-#         print(f"⚠️ Error in pipeline step: {e}")
-#         return None
 
 
-# # ----------------------------------------------------------
-# # Lab 3: Sentiment Pipeline Builder
-# # ----------------------------------------------------------
-# def build_sentiment_pipeline_demo(verbose: bool = False):
-#     """
-#     Build a simple three-step DSPY pipeline:
-#       1. Extract sentences about Tulane University
-#       2. Annotate each sentence with sentiment (pos/neg/neutral)
-#       3. Summarize overall sentiment
-
-#     If verbose=True, prints intermediate steps for transparency.
-#     """
-#     import dspy
-#     extract = dspy.Predict("text -> sentences_about_tulane: list[str]")
-#     annotate = dspy.Predict("sentence -> sentiment: str")
-#     summarize = dspy.Predict("sentiments: list[str] -> summary: str")
-
-#     def pipeline(text: str):
-#         try:
-#             # Step 1: Extract sentences mentioning Tulane
-#             extraction_result = extract(text=text)
-#             sentences = getattr(extraction_result, "sentences_about_tulane", [])
-#             if verbose:
-#                 print("🟢 Extracted Sentences:", sentences)
-
-#             # Step 2: Annotate sentiment
-#             labels = []
-#             for s in sentences:
-#                 sentiment_result = annotate(sentence=s)
-#                 sentiment = getattr(sentiment_result, "sentiment", "unknown")
-#                 labels.append(sentiment)
-#                 if verbose:
-#                     print(f"🟣 Sentiment for '{s[:50]}...': {sentiment}")
-
-#             # Step 3: Summarize
-#             summary_result = summarize(sentiments=labels)
-#             summary = getattr(summary_result, "summary", "")
-#             if verbose:
-#                 print("🧩 Final Summary:", summary)
-
-#             return summary
-
-#         except Exception as e:
-#             print(f"⚠️ Pipeline failed: {e}")
-#             return "⚠️ Pipeline encountered an error."
-
-#     return pipeline
+# ---------- LAB 4 Setup ----------
+def lab4_setup():
+    """
+    Setup for Lab 3
+    """
+    import sys, os, math, numpy as np
+    import matplotlib.pyplot as plt
+    install_core_deps()
+    seed_everything(42)
+    init_openai()
+    if '/content/main' not in sys.path:
+        sys.path.append('/content/main')
 
 
-# # ----------------------------------------------------------
-# # Lab 3: Single-Prompt Comparison Function
-# # ----------------------------------------------------------
-# def single_prompt_sentiment_summary(article: str) -> str:
-#     """
-#     Single-prompt approach for comparison:
-#     Asks the LLM to read the entire article and summarize the sentiment
-#     about Tulane University in one go.
-#     """
-#     try:
-#         client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
-
-#         response = client.chat.completions.create(
-#             model="gpt-4o-mini",
-#             messages=[
-#                 {
-#                     "role": "system",
-#                     "content": "You are a helpful analyst of university sentiment.",
-#                 },
-#                 {
-#                     "role": "user",
-#                     "content": f"Analyze this article and summarize the overall sentiment about Tulane University:\n{article}",
-#                 },
-#             ],
-#             temperature=0.7,
-#         )
-
-#         return response.choices[0].message.content.strip()
-
-#     except Exception as e:
-#         print(f"⚠️ Single-prompt call failed: {e}")
-#         return "⚠️ Error running single-prompt model."
+def simple_keyword_search(query, docs):
+    """
+    Return documents containing the query words (case-insensitive).
+    """
+    results = [d for d in docs if query.lower().split()[0] in d.lower()]
+    return results or ["(no matches found)"]
 
 
-# # ----------------------------------------------------------
-# # Lab 3: Optional: Simple Gradio Demo Builder
-# # ----------------------------------------------------------
-# def lab3_build_demo():
-#     """
-#     Optional Gradio interface for interactive exploration.
-#     Lets students input an article and see the pipeline outputs.
-#     """
+def lab4_generate_visualization(texts, model="text-embedding-3-small"):
+    """
+    Generate and display a 2D PCA projection of embeddings for a list of text strings.
 
-#     pipeline = build_sentiment_pipeline_demo(verbose=True)
+    Args:
+        texts (list of str): Sentences or words to embed and plot.
+        model (str): OpenAI embedding model to use.
 
-#     def run_pipeline(article):
-#         return pipeline(article)
+    Returns:
+        numpy.ndarray: 2D PCA-transformed coordinates of embeddings.
+    """
+    from openai import OpenAI
+    from sklearn.decomposition import PCA
 
-#     with gr.Blocks() as demo:
-#         gr.Markdown("### 🧠 DSPY Sentiment Pipeline Explorer")
-#         inp = gr.Textbox(label="Article Text", placeholder="Paste text mentioning Tulane University")
-#         out = gr.Textbox(label="Pipeline Output (Summary)")
-#         btn = gr.Button("Run Pipeline")
-#         btn.click(run_pipeline, inputs=inp, outputs=out)
-#     return demo
+    client = OpenAI()
+    print(f"🔢 Generating embeddings for {len(texts)} texts...")
+    embeddings = [client.embeddings.create(input=t, model=model).data[0].embedding for t in texts]
+
+    # Reduce to 2D
+    pca = PCA(n_components=2)
+    proj = pca.fit_transform(np.array(embeddings))
+
+    # --- Plot ---
+    plt.figure(figsize=(6, 5))
+    plt.scatter(proj[:, 0], proj[:, 1], color="teal", s=60)
+    for i, t in enumerate(texts):
+        plt.text(proj[i, 0] + 0.01, proj[i, 1], t)
+    plt.title("PCA Projection of Embeddings")
+    plt.xlabel("PC1"); plt.ylabel("PC2")
+    plt.show()
+
+    return proj
+
+
+
+def lab4_build_search_demo():
+    """
+    Build a Gradio demo where students can interactively compare
+    keyword-based and semantic search results side-by-side.
+    """
+    import gradio as gr
+
+    example_docs = [
+        "Tulane University is located in New Orleans.",
+        "The Mississippi River runs through Louisiana.",
+        "Crawfish season peaks in early spring.",
+        "AI models learn from data patterns, not logic rules.",
+        "Jazz music was born in New Orleans.",
+    ]
+
+    def search_interface(query):
+        kw_results = simple_keyword_search(query, example_docs)
+        sem_results = semantic_search(query, example_docs)
+
+        kw_text = "\n".join([f"- {r}" for r in kw_results])
+        sem_text = "\n".join([f"- {r}" for r in sem_results])
+
+        return kw_text, sem_text
+
+    demo = gr.Interface(
+        fn=search_interface,
+        inputs=gr.Textbox(label="Enter your query:"),
+        outputs=[
+            gr.Textbox(label="Keyword Search Results"),
+            gr.Textbox(label="Semantic Search Results")
+        ],
+        title="🔎 Compare Keyword vs Semantic Search",
+        description="Type a query and compare how keyword matching and semantic embeddings differ.",
+        examples=[
+            ["tulane"],
+            ["music in Louisiana"],
+            ["AI and learning"],
+            ["river"],
+        ],
+    )
+    return demo
