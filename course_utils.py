@@ -287,7 +287,7 @@ def lab3_build_demo(verbose: bool = False):
 # ---------- LAB 4 Setup ----------
 def lab4_setup():
     """
-    Setup for Lab 3
+    Setup for Lab 4
     """
     import sys, os, math, numpy as np
     import matplotlib.pyplot as plt
@@ -377,5 +377,155 @@ def lab4_build_search_demo(search_fn, docs=None):
         title="Lab 4 – Semantic Search Explorer",
         description="Run your own semantic search implementation interactively.",
     )
+
+    return demo
+
+
+# ---------- LAB 5 Setup ----------
+def lab5_setup():
+    """
+    Setup for Lab 5
+    """
+    import sys, os, math, numpy as np
+    import matplotlib.pyplot as plt
+    install_core_deps()
+    seed_everything(42)
+    init_openai()
+    if '/content/main' not in sys.path:
+        sys.path.append('/content/main')
+
+
+def get_sample_corpus(name: str = "mini_wiki"):
+    """
+    Returns a small corpus for RAG experiments.
+
+    Args:
+        name (str): corpus variant name (currently only 'mini_wiki')
+
+    Returns:
+        list[str]: list of paragraph-length texts
+    """
+    if name != "mini_wiki":
+        raise ValueError("Only 'mini_wiki' corpus is supported for now.")
+
+    corpus = [
+        textwrap.dedent("""
+            The Eiffel Tower is a wrought-iron lattice tower on the Champ de Mars in Paris, France.
+            It was named after the engineer Gustave Eiffel, whose company designed and built the tower.
+            Constructed from 1887 to 1889, it was initially criticized by some of France's leading artists
+            but has become a global cultural icon of France and one of the most recognizable structures in the world.
+        """).strip(),
+
+        textwrap.dedent("""
+            The Amazon rainforest, also known as Amazonia, is a moist broadleaf tropical rainforest
+            in the Amazon biome that covers most of the Amazon basin of South America.
+            This region includes territory belonging to nine nations and is known for its biodiversity.
+        """).strip(),
+
+        textwrap.dedent("""
+            The Great Pyramid of Giza is the oldest and largest of the three pyramids in the Giza pyramid complex
+            bordering present-day Giza in Greater Cairo, Egypt. It is the oldest of the Seven Wonders of the Ancient World.
+        """).strip(),
+
+        textwrap.dedent("""
+            The Pacific Ocean is the largest and deepest of Earth's oceanic divisions.
+            It extends from the Arctic Ocean in the north to the Southern Ocean in the south.
+        """).strip(),
+
+        textwrap.dedent("""
+            Machine learning is a field of computer science that uses statistical techniques
+            to give computer systems the ability to 'learn' from data, without being explicitly programmed.
+        """).strip(),
+    ]
+
+    return corpus
+
+
+# -----------------------------
+# 🧠 RAG Answer Generator
+# -----------------------------
+def lab5_generate_answer(query: str, context: str, model: str = "gpt-4o-mini", max_tokens: int = 150):
+    """
+    Generates a grounded answer using a small LLM call.
+
+    Args:
+        query (str): user question
+        context (str): retrieved text snippets joined together
+        model (str): OpenAI model (default: gpt-4o-mini)
+        max_tokens (int): response length limit
+
+    Returns:
+        str: generated model answer
+    """
+    system_prompt = (
+        "You are a helpful teaching assistant answering student questions. "
+        "Only use information from the provided context. If unsure, say 'I don’t know.'"
+    )
+
+    user_prompt = f"Context:\n{context}\n\nQuestion: {query}\nAnswer:"
+
+    try:
+        response = openai.ChatCompletion.create(
+            model=model,
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt},
+            ],
+            max_tokens=max_tokens,
+            temperature=0.3,
+        )
+        return response["choices"][0]["message"]["content"].strip()
+    except Exception as e:
+        print("⚠️ OpenAI call failed. Returning simulated answer.")
+        # Offline fallback: a simple heuristic
+        if "Paris" in context:
+            return "The capital of France is Paris."
+        if "Amazon" in context:
+            return "The Amazon rainforest is in South America."
+        if "Pyramid" in context:
+            return "The Great Pyramid of Giza is in Egypt."
+        return "I don’t know based on the given context."
+
+
+# -----------------------------
+# 🧩 Gradio Demo Builder
+# -----------------------------
+def lab5_build_demo(retrieve_fn, chunk_fn, embed_fn):
+    """
+    Creates a Gradio interface for experimenting with RAG retrieval.
+
+    Students can type a query and see which chunks are retrieved and how the model answers.
+
+    Args:
+        retrieve_fn: function(query, chunks, chunk_embeddings, k)
+        chunk_fn: function(text, chunk_size, overlap)
+        embed_fn: function(chunks)
+
+    Returns:
+        gr.Interface: Gradio app
+    """
+    corpus = get_sample_corpus()
+    all_text = "\n".join(corpus)
+    chunks = chunk_fn(all_text, chunk_size=150, overlap=30)
+    chunk_embeddings = embed_fn(chunks)
+
+    def run_rag(query, k, chunk_size):
+        chunks_local = chunk_fn(all_text, chunk_size=int(chunk_size))
+        embeddings_local = embed_fn(chunks_local)
+        retrieved = retrieve_fn(query, chunks_local, embeddings_local, k=int(k))
+        context = "\n\n".join(retrieved)
+        answer = lab5_generate_answer(query, context)
+        return context, answer
+
+    with gr.Blocks() as demo:
+        gr.Markdown("### 🧩 Mini RAG Explorer — Lab 5")
+        query = gr.Textbox(label="Your question:")
+        k = gr.Slider(1, 5, value=3, step=1, label="Top-k")
+        chunk_size = gr.Slider(50, 400, value=150, step=50, label="Chunk size")
+        btn = gr.Button("Run RAG")
+        ctx_out = gr.Textbox(label="Retrieved Context")
+        ans_out = gr.Textbox(label="Generated Answer")
+
+        btn.click(fn=run_rag, inputs=[query, k, chunk_size], outputs=[ctx_out, ans_out])
 
     return demo
