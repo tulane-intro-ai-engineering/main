@@ -405,6 +405,7 @@ def get_sample_corpus(name: str = "mini_wiki"):
     Returns:
         list[str]: list of paragraph-length texts
     """
+    import textwrap
     if name != "mini_wiki":
         raise ValueError("Only 'mini_wiki' corpus is supported for now.")
 
