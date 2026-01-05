@@ -499,8 +499,9 @@ def get_text_embedding(text: str, model: str = "text-embedding-3-small"):
     Returns:
         np.ndarray: normalized embedding vector
     """
+    from openai import OpenAI
     try:
-        client = openai.OpenAI()
+        client = OpenAI()
         response = client.embeddings.create(input=text, model=model)
         vec = np.array(response.data[0].embedding, dtype=np.float32)
         # Normalize to unit length for cosine similarity
