@@ -1,17 +1,21 @@
 # course_utils.py
 
 from __future__ import annotations
-
+from dataclasses import dataclass
 import getpass
 import gradio as gr
+import json
+import math
 import numpy as np
 from openai import OpenAI
 import os
 from pathlib import Path
 import random
+import re
 import sys
 import subprocess
 import time
+from typing import Any, Dict, List, Callable, Optional
 
 
 # If you already have a seed function, reuse it.
@@ -571,7 +575,7 @@ def lab6_setup():
     init_openai()
     if '/content/main' not in sys.path:
         sys.path.append('/content/main')
-        
+
 # -------------------------
 # Corpus + chunking
 # -------------------------
