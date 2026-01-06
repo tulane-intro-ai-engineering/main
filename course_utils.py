@@ -1647,3 +1647,23 @@ def lab11_build_demo(handler_fn: Callable[[str, bool], str]):
         )
 
     return demo
+
+
+
+# -------------------------
+# Lab 12 Setup
+# -------------------------
+
+def lab12_setup(seed: int = 11) -> None:
+    """
+    Installs minimal packages for Week 11 labs and sets seeds.
+    Keep this light; students should mostly press Run.
+    """
+    import sys, os, math, numpy as np
+    import matplotlib.pyplot as plt
+    install_core_deps()
+    seed_everything(42)
+    init_openai()
+    _install(["dspy"])
+    if '/content/main' not in sys.path:
+        sys.path.append('/content/main')
