@@ -1502,3 +1502,148 @@ def build_tiny_embedding_retriever(
 
     return topk_docs
 
+
+# -------------------------
+# Lab 11 Setup
+# -------------------------
+
+def lab11_setup(seed: int = 11) -> None:
+    """
+    Installs minimal packages for Week 11 labs and sets seeds.
+    Keep this light; students should mostly press Run.
+    """
+    import sys, os, math, numpy as np
+    import matplotlib.pyplot as plt
+    install_core_deps()
+    seed_everything(42)
+    init_openai()
+    _install(["dspy"])
+    if '/content/main' not in sys.path:
+        sys.path.append('/content/main')
+
+def safe_str(x) -> str:
+    """Best-effort conversion to string without crashing."""
+    try:
+        return "" if x is None else str(x)
+    except Exception:
+        return "<unprintable>"
+
+
+# -------------------------
+# LLM helper for Lab 11
+# -------------------------
+
+_DEFAULT_SYSTEM_PROMPT = (
+    "You are a helpful teaching assistant for an Intro to AI Engineering course. "
+    "Be concise. Use bullet points when helpful. If you are unsure, say so."
+)
+
+def lab11_generate_reply(
+    user_prompt: str,
+    system_prompt: str = _DEFAULT_SYSTEM_PROMPT,
+    temperature: float = 0.2,
+    model: Optional[str] = None,
+) -> str:
+    """
+    Minimal, student-friendly LLM call.
+
+    - Keeps API details out of the notebook.
+    - Uses OPENAI_API_KEY if present, otherwise returns a friendly error.
+    - `model` defaults to an inexpensive model if you set OPENAI_MODEL env var.
+
+    Returns: assistant reply as a string.
+    """
+    user_prompt = safe_str(user_prompt).strip()
+    if not user_prompt:
+        return "ERROR: empty input"
+
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        return (
+            "ERROR: OPENAI_API_KEY is not set.\n\n"
+            "In Colab, go to **Runtime → Secrets** or set it in the environment.\n"
+            "Ask your instructor if you're using a proxy key setup."
+        )
+
+    # Choose model: env var override, then parameter, then default.
+    # Keep this flexible for the instructor.
+    model_name = (
+        model
+        or os.getenv("OPENAI_MODEL")
+        or "gpt-4o-mini"
+    )
+
+    try:
+        # OpenAI Python SDK (v1+)
+        from openai import OpenAI
+        client = OpenAI(api_key=api_key)
+
+        resp = client.chat.completions.create(
+            model=model_name,
+            temperature=float(temperature),
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt},
+            ],
+        )
+        return resp.choices[0].message.content.strip()
+
+    except Exception as e:
+        # Friendly message; avoid dumping stack traces to students.
+        return f"ERROR: model call failed ({type(e).__name__}). Try again or reduce input size."
+
+
+# -------------------------
+# Gradio UI helper
+# -------------------------
+
+def lab11_build_demo(handler_fn: Callable[[str, bool], str]):
+    """
+    Builds a Gradio app around the student's `handler(user_text, use_cache)`.
+
+    We keep the UI wiring here so students focus on:
+    - validation
+    - caching
+    - logging
+
+    The handler_fn should:
+      handler_fn(user_text: str, use_cache: bool) -> str
+    """
+    import gradio as gr
+
+    with gr.Blocks() as demo:
+        gr.Markdown("# Lab 11 — Deploy as a Web App")
+        gr.Markdown(
+            "This UI calls your `handler()` function. "
+            "Try good inputs, empty inputs, and very long inputs to see guardrails."
+        )
+
+        with gr.Row():
+            user_text = gr.Textbox(
+                label="User text",
+                placeholder="Ask a question…",
+                lines=4,
+            )
+
+        with gr.Row():
+            use_cache = gr.Checkbox(value=True, label="Use cache")
+
+        out = gr.Textbox(label="Output", lines=10)
+
+        def _call(user_text_val, use_cache_val):
+            # Always return a string to the UI
+            try:
+                return safe_str(handler_fn(user_text_val, bool(use_cache_val)))
+            except Exception as e:
+                return f"ERROR: handler crashed ({type(e).__name__})."
+
+        btn = gr.Button("Submit")
+        btn.click(_call, inputs=[user_text, use_cache], outputs=out)
+
+        gr.Markdown(
+            "### Tips\n"
+            "- If you see API key errors, set `OPENAI_API_KEY`.\n"
+            "- If the model is slow, try enabling caching and asking the same question twice.\n"
+        )
+
+    return demo
