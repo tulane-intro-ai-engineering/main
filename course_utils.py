@@ -28,6 +28,7 @@ def _install(deps):
         try:
             __import__(pkg)
         except ImportError:
+            print('installing %s' % pkg)            
             subprocess.run(
                 [sys.executable, "-m", "pip", "install", "-q", pkg],
                 check=True,
