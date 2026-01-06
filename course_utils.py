@@ -965,7 +965,7 @@ def build_simple_retriever(
 
     chunks: List[Dict[str, Any]] = []
     for d in corpus:
-        for i, ch in enumerate(chunk_text_words(d["text"], chunk_size, overlap)):
+        for i, ch in enumerate(_chunk_text_words(d["text"], chunk_size, overlap)):
             chunks.append(
                 {"chunk_id": f"{d['doc_id']}::c{i}", "doc_id": d["doc_id"], "text": ch}
             )
