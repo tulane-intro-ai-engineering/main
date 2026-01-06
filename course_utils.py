@@ -50,7 +50,7 @@ def init_openai():
 
 
 def show_mermaid(graph_str):
-    _install(['mermaid-python'])
+    # _install(['mermaid-python'])
     from mermaid import Mermaid
     display(Mermaid(graph_str))
 
