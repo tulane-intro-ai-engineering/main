@@ -557,3 +557,304 @@ def lab5_build_demo(retrieve_fn, chunk_fn, embed_fn):
         btn.click(fn=run_rag, inputs=[query, k, chunk_size], outputs=[ctx_out, ans_out])
 
     return demo
+
+
+# ---------- LAB 6 Setup ----------
+def lab6_setup():
+    """
+    Setup for Lab 6
+    """
+    import sys, os, math, numpy as np
+    import matplotlib.pyplot as plt
+    install_core_deps()
+    seed_everything(42)
+    init_openai()
+    if '/content/main' not in sys.path:
+        sys.path.append('/content/main')
+        
+# -------------------------
+# Corpus + chunking
+# -------------------------
+def lab6_get_corpus() -> List[Dict[str, Any]]:
+    """
+    Return a tiny document set used for RAG retrieval in Lab 6.
+    Keep this small and readable: students should be able to inspect it.
+    """
+    return [
+        {
+            "doc_id": "policy_oncall",
+            "title": "On-Call Rotation Policy",
+            "text": (
+                "The on-call rotation is required for full-time engineers and optional for interns.\n"
+                "Interns may join on-call only after completing onboarding and receiving manager approval.\n"
+                "Interns should start with shadow shifts."
+            ),
+            "meta": {"type": "policy", "updated": "2025-11-15"},
+        },
+        {
+            "doc_id": "policy_access",
+            "title": "Access Control Policy",
+            "text": (
+                "Interns are granted access to internal tools in the first week.\n"
+                "Interns may NOT access customer production data.\n"
+                "Elevated access requires manager approval."
+            ),
+            "meta": {"type": "policy", "updated": "2025-09-01"},
+        },
+        {
+            "doc_id": "runbook_incidents",
+            "title": "Incident Response Runbook",
+            "text": (
+                "Responders should: (1) acknowledge the page, (2) assess severity, (3) mitigate,\n"
+                "(4) communicate updates, and (5) write a postmortem."
+            ),
+            "meta": {"type": "runbook", "updated": "2025-05-02"},
+        },
+    ]
+
+def _words(text: str) -> List[str]:
+    return re.findall(r"[A-Za-z0-9']+", text.lower())
+
+def _chunk_text_words(text: str, chunk_size: int, overlap: int) -> List[str]:
+    w = _words(text)
+    if chunk_size <= 0:
+        raise ValueError("chunk_size must be > 0")
+    if overlap < 0 or overlap >= chunk_size:
+        raise ValueError("overlap must satisfy 0 <= overlap < chunk_size")
+
+    chunks: List[str] = []
+    start = 0
+    while start < len(w):
+        end = min(start + chunk_size, len(w))
+        chunks.append(" ".join(w[start:end]))
+        if end == len(w):
+            break
+        start = end - overlap
+    return chunks
+
+def _normalize(v: np.ndarray) -> np.ndarray:
+    v = np.asarray(v, dtype=np.float32)
+    return v / (np.linalg.norm(v) + 1e-12)
+
+@dataclass
+class Lab6Retriever:
+    """A minimal retriever object: chunks + embedding matrix + top_k."""
+    chunks: List[Dict[str, Any]]
+    X: np.ndarray
+    top_k: int
+
+def lab6_build_retriever(
+    corpus: List[Dict[str, Any]],
+    chunk_size: int = 60,
+    overlap: int = 15,
+    top_k: int = 4,
+) -> Lab6Retriever:
+    """
+    Build a simple embedding-based retriever over chunked documents.
+    Uses get_text_embedding(text) from course_utils.
+    """
+    # Late import to avoid circular issues if course_utils defines get_text_embedding below this code.
+    from course_utils import get_text_embedding  # type: ignore
+
+    chunks: List[Dict[str, Any]] = []
+    for d in corpus:
+        for i, ch in enumerate(_chunk_text_words(d["text"], chunk_size=chunk_size, overlap=overlap)):
+            chunks.append(
+                {
+                    "chunk_id": f"{d['doc_id']}::c{i}",
+                    "doc_id": d["doc_id"],
+                    "title": d.get("title", ""),
+                    "text": ch,
+                    "meta": d.get("meta", {}),
+                }
+            )
+
+    # Embed + normalize for cosine similarity
+    X = np.vstack([_normalize(np.array(get_text_embedding(c["text"]))) for c in chunks]).astype(np.float32)
+    return Lab6Retriever(chunks=chunks, X=X, top_k=int(top_k))
+
+def lab6_rag_retrieve(query: str, retriever: Lab6Retriever) -> Dict[str, Any]:
+    """
+    Retrieve top-k passages for a query.
+    Returns dict: {"passages": [str, ...], "scores": [float, ...]}
+    """
+    from course_utils import get_text_embedding  # type: ignore
+
+    q = _normalize(np.array(get_text_embedding(query))).astype(np.float32)
+    sims = retriever.X @ q
+    k = max(1, int(retriever.top_k))
+    idx = np.argsort(-sims)[:k]
+
+    passages: List[str] = []
+    scores: List[float] = []
+    for i in idx:
+        c = retriever.chunks[int(i)]
+        passages.append(f"[{c['chunk_id']}] {c['text']}")
+        scores.append(float(sims[int(i)]))
+
+    return {"passages": passages, "scores": scores}
+
+
+# -------------------------
+# Calculator tool
+# -------------------------
+_ALLOWED_MATH = set("0123456789+-*/(). %")
+
+def lab6_calculator(expression: str) -> Dict[str, Any]:
+    """
+    A tiny calculator tool.
+    Supports basic arithmetic; rejects unexpected characters.
+    """
+    expr = (expression or "").strip()
+    if not expr:
+        return {"error": "Empty expression."}
+    if any(ch not in _ALLOWED_MATH for ch in expr):
+        return {"error": "Expression contains disallowed characters."}
+    try:
+        result = eval(expr, {"__builtins__": {}}, {})  # no builtins
+        # Keep result JSON-friendly
+        if isinstance(result, (int, float)) and (math.isfinite(result) if isinstance(result, float) else True):
+            return {"result": result}
+        return {"result": result}
+    except Exception as e:
+        return {"error": str(e)}
+
+
+# -------------------------
+# Optional LLM answer helper
+# -------------------------
+def _openai_client():
+    """
+    Best-effort OpenAI client creation.
+    - Uses OPENAI_API_KEY from environment.
+    """
+    api_key = os.getenv("OPENAI_API_KEY", "")
+    if not api_key:
+        return None
+
+    try:
+        # New OpenAI SDK (v1+)
+        from openai import OpenAI  # type: ignore
+        return OpenAI(api_key=api_key)
+    except Exception:
+        return None
+
+def lab6_generate_answer(
+    question: str,
+    passages: Optional[List[str]] = None,
+    model: str = "gpt-4o-mini",
+    temperature: float = 0.2,
+) -> str:
+    """
+    Generate an answer (optionally grounded in retrieved passages).
+    If OPENAI_API_KEY is missing, returns a safe placeholder.
+
+    This keeps notebook code simple: the notebook passes question + passages.
+    """
+    client = _openai_client()
+    if client is None:
+        # Safe fallback for environments without keys
+        if passages:
+            return (
+                "⚠️ (LLM not configured) Here are the retrieved passages you should use:\n\n"
+                + "\n\n".join(passages[:3])
+            )
+        return "⚠️ (LLM not configured) Please set OPENAI_API_KEY to generate answers."
+
+    context_block = ""
+    if passages:
+        context_block = "SOURCES:\n" + "\n".join(passages) + "\n\n"
+
+    system = (
+        "You are a helpful course assistant. "
+        "If SOURCES are provided, answer using ONLY those sources. "
+        "If the sources do not contain the answer, say 'I don't know based on the provided sources.' "
+        "Be concise."
+    )
+    user = f"{context_block}QUESTION: {question}\nANSWER:"
+
+    # New SDK call style
+    try:
+        resp = client.chat.completions.create(
+            model=model,
+            messages=[
+                {"role": "system", "content": system},
+                {"role": "user", "content": user},
+            ],
+            temperature=temperature,
+        )
+        return resp.choices[0].message.content.strip()
+    except Exception as e:
+        return f"⚠️ OpenAI call failed: {e}"
+
+
+# -------------------------
+# Default eval set (tool-choice)
+# -------------------------
+def lab6_default_eval_set() -> List[Dict[str, Any]]:
+    """
+    Returns a small labeled dataset:
+    each item: {"q": ..., "gold_tool": "calculator"|"rag"|"none"}
+
+    Keep small so students can inspect it.
+    """
+    return [
+        {"q": "What is 17% of 84? Use arithmetic.", "gold_tool": "calculator"},
+        {"q": "Compute (12+5)*3.", "gold_tool": "calculator"},
+        {"q": "According to the policy, can interns join the on-call rotation?", "gold_tool": "rag"},
+        {"q": "What does the runbook say to do during an incident?", "gold_tool": "rag"},
+        {"q": "Explain in one sentence what an agent is.", "gold_tool": "none"},
+        {"q": "Write a short analogy for embeddings.", "gold_tool": "none"},
+        # A couple “tricky” ones:
+        {"q": "According to the docs, what is 12+5?", "gold_tool": "calculator"},  # docs phrase but math dominates
+        {"q": "Policy question: do interns have production access?", "gold_tool": "rag"},
+    ]
+
+
+# -------------------------
+# Gradio demo builder
+# -------------------------
+def lab6_build_demo(
+    policy_fn: Callable[[str], str],
+    agent_step_fn: Callable[..., Dict[str, Any]],
+    retriever: Lab6Retriever,
+):
+    """
+    Build a simple Gradio UI around the student's agent.
+    We keep UI wiring here (not in notebooks).
+
+    agent_step_fn is expected to accept:
+      agent_step_fn(question, policy=policy_fn, retriever=retriever, use_llm_for_final_answer=True/False)
+    """
+    import gradio as gr
+
+    def run(question: str, use_llm: bool):
+        out = agent_step_fn(
+            question,
+            policy=policy_fn,
+            retriever=retriever,
+            use_llm_for_final_answer=use_llm,
+        )
+        tool = out.get("tool", "")
+        trace = " → ".join(out.get("trace", []))
+        answer = out.get("answer", "")
+        tool_output = out.get("tool_output", None)
+        tool_output_str = json.dumps(tool_output, indent=2) if tool_output is not None else ""
+        return tool, trace, tool_output_str, answer
+
+    demo = gr.Interface(
+        fn=run,
+        inputs=[
+            gr.Textbox(label="Question", value="According to the policy, can interns join on-call?"),
+            gr.Checkbox(label="Use LLM to write final answer (optional)", value=True),
+        ],
+        outputs=[
+            gr.Textbox(label="Chosen tool"),
+            gr.Textbox(label="Tool trace"),
+            gr.Textbox(label="Tool output (JSON)"),
+            gr.Textbox(label="Answer"),
+        ],
+        title="Lab 6: Tool-Choosing Agent (Calculator vs RAG)",
+        description="Enter a question. The agent chooses a tool, calls it, and returns an answer + trace.",
+    )
+    return demo
