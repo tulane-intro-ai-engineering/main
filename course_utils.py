@@ -1334,3 +1334,171 @@ def lab9_build_tradeoff_sweep(
             }
         )
     return rows
+
+
+
+# -----------------------------
+# Week 10: Drift and Monitoring
+# -----------------------------
+def lab10_setup() -> None:
+    """
+    Setup for Lab 10
+    """
+    import sys, os, math, numpy as np
+    import matplotlib.pyplot as plt
+    install_core_deps()
+    seed_everything(42)
+    init_openai()
+    _install(["dspy"])
+    if '/content/main' not in sys.path:
+        sys.path.append('/content/main')
+
+# -------------------------
+# Logging helpers (safe-ish defaults)
+# -------------------------
+
+_SECRET_PATTERNS = [
+    # very rough patterns — meant for teaching, not production security
+    r"sk-[A-Za-z0-9]{10,}",           # OpenAI-style keys
+    r"(?i)api[_-]?key\s*=\s*\S+",
+    r"(?i)authorization:\s*bearer\s+\S+",
+]
+
+_EMAIL_RE = re.compile(r"\b[\w\.-]+@[\w\.-]+\.\w+\b")
+_PHONE_RE = re.compile(r"\b(?:\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b")
+
+
+def redact_for_logging(text: str, max_chars: int = 500) -> str:
+    """
+    A simple redaction helper for demos:
+    - masks common secret-like patterns
+    - masks emails and phone numbers
+    - truncates long strings
+
+    WARNING: This is not complete PII protection. It's a teaching scaffold.
+    """
+    if text is None:
+        return ""
+
+    t = str(text)
+
+    # Mask emails/phones
+    t = _EMAIL_RE.sub("[REDACTED_EMAIL]", t)
+    t = _PHONE_RE.sub("[REDACTED_PHONE]", t)
+
+    # Mask secret patterns
+    for pat in _SECRET_PATTERNS:
+        t = re.sub(pat, "[REDACTED_SECRET]", t)
+
+    # Truncate
+    if max_chars is not None and len(t) > max_chars:
+        t = t[:max_chars] + "…[TRUNCATED]"
+    return t
+
+
+# -------------------------
+# Drift metrics (optional reference implementations)
+# -------------------------
+
+def _normalize(v: np.ndarray) -> np.ndarray:
+    v = np.asarray(v, dtype=np.float32)
+    return v / (np.linalg.norm(v) + 1e-12)
+
+
+def drift_length_stats(texts: Sequence[str]) -> Dict[str, float]:
+    """
+    Returns basic length stats for a list of strings.
+    Useful as a simple unlabeled drift monitor.
+    """
+    lengths = np.array([len(t or "") for t in texts], dtype=np.float32)
+    if len(lengths) == 0:
+        return {"mean_len": 0.0, "p90_len": 0.0, "max_len": 0.0}
+    return {
+        "mean_len": float(lengths.mean()),
+        "p90_len": float(np.percentile(lengths, 90)),
+        "max_len": float(lengths.max()),
+    }
+
+
+def drift_embedding_centroid_shift(
+    texts_a: Sequence[str],
+    texts_b: Sequence[str],
+) -> float:
+    """
+    Measures semantic drift via cosine distance between mean embeddings.
+
+    Returns:
+      cosine_distance = 1 - cosine_similarity(mean_a, mean_b)
+    """
+    if len(texts_a) == 0 or len(texts_b) == 0:
+        return 0.0
+
+    XA = np.vstack([_normalize(get_text_embedding(t or "")) for t in texts_a])
+    XB = np.vstack([_normalize(get_text_embedding(t or "")) for t in texts_b])
+
+    ca = _normalize(XA.mean(axis=0))
+    cb = _normalize(XB.mean(axis=0))
+    return float(1.0 - float(ca @ cb))
+
+
+def drift_psi_histogram(
+    feature_a: Sequence[float],
+    feature_b: Sequence[float],
+    bins: Sequence[float],
+    epsilon: float = 1e-6,
+) -> float:
+    """
+    PSI-style drift on a 1D feature using discrete bins.
+
+    PSI = sum_i (pb_i - pa_i) * ln(pb_i / pa_i)
+
+    Where pa_i, pb_i are frequencies in bin i.
+    Larger PSI -> more drift (roughly).
+
+    Teaching note:
+      PSI is common in monitoring, but thresholds depend on domain.
+    """
+    a = np.asarray(feature_a, dtype=np.float32)
+    b = np.asarray(feature_b, dtype=np.float32)
+    if a.size == 0 or b.size == 0:
+        return 0.0
+
+    # histogram counts
+    ca, _ = np.histogram(a, bins=bins)
+    cb, _ = np.histogram(b, bins=bins)
+
+    pa = ca / max(1, ca.sum())
+    pb = cb / max(1, cb.sum())
+
+    # avoid zeros
+    pa = np.clip(pa, epsilon, 1.0)
+    pb = np.clip(pb, epsilon, 1.0)
+
+    psi = np.sum((pb - pa) * np.log(pb / pa))
+    return float(psi)
+
+
+# -------------------------
+# Tiny retrieval helper (optional; mirrors Lab 10 style)
+# -------------------------
+
+def build_tiny_embedding_retriever(
+    corpus: Sequence[Dict[str, str]],
+    text_key: str = "text",
+    id_key: str = "doc_id",
+):
+    """
+    Returns a function topk_docs(query, k) that retrieves doc_ids by cosine similarity.
+    This is handy for labs/demos without introducing a full vector DB.
+    """
+    doc_ids = [d[id_key] for d in corpus]
+    X = np.vstack([_normalize(get_text_embedding(d[text_key])) for d in corpus])
+
+    def topk_docs(query: str, k: int = 3) -> List[str]:
+        q = _normalize(get_text_embedding(query))
+        sims = X @ q
+        idx = np.argsort(-sims)[:k]
+        return [doc_ids[int(i)] for i in idx]
+
+    return topk_docs
+
