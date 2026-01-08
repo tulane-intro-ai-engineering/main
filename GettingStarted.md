@@ -87,7 +87,7 @@ You’ll only need to provide your API key the first time you run a lab each ses
 
 You’ll need an **OpenAI API key** to use GPT models in the labs.  
 To request your student key, follow the instructions in:  
-📄 [`OpenAI-Students.md`](./setup/OpenAI-Students.md)
+📄 [`OpenAI-Students.md`](./OpenAI-Students.md)
 
 That document explains how to:
 
@@ -117,7 +117,26 @@ Just run it once at the start of the notebook to prepare your workspace.
 
 ---
 
-### 💡 7. Troubleshooting Tips
+### 💾 7. Turning In Labs
+
+When you finish editing your lab notebook in Colab:
+
+1. Make sure all your cells run without errors.  
+   You can click **Runtime → Run all** to double-check.  
+
+2. Save your work by choosing:  
+   **File → Save** (this updates your Google Drive copy).  
+
+3. Then download your notebook as a `.ipynb` file:  
+   **File → Download → Download .ipynb**  
+
+4. Finally, upload the downloaded `.ipynb` file to **Canvas** under the corresponding lab assignment.  
+
+✅ **Tip:** You can reopen your saved copy later by visiting your Google Drive — it will appear under the folder `Colab Notebooks`.
+
+---
+
+### 💡 8. Troubleshooting Tips
 
 If something isn’t working in Colab:
 
