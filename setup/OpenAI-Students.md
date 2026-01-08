@@ -1,4 +1,4 @@
-## 2) Student guide (get your project API key)
+## Student guide (get your project API key)
 
 1. **Accept the invite**
 
