@@ -3,7 +3,9 @@ Main repository for Intro to AI Engineering course at Tulane University
 
 - [Course Schedule](https://docs.google.com/spreadsheets/d/1mJ0QD4Fhp75CBow1QCoFBWXWao_gw9lvA5ZfVrKNLmk/edit?usp=sharing)
 - [Canvas](https://tulane.instructure.com/courses/2308257)
+- [Getting Started guide](GettingStarted.md)
 
+  
 ## Weekly Lectures and Labs
 
 [nb: assume they are under revision until the day they are introduced in class ;)]
