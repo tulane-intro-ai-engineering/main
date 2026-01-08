@@ -87,7 +87,7 @@ You’ll only need to provide your API key the first time you run a lab each ses
 
 You’ll need an **OpenAI API key** to use GPT models in the labs.  
 To request your student key, follow the instructions in:  
-📄 [`OpenAI-Students.md`](./OpenAI-Students.md)
+📄 [`OpenAI-Students.md`](./setup/OpenAI-Students.md)
 
 That document explains how to:
 
