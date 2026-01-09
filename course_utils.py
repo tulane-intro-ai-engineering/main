@@ -592,7 +592,7 @@ def lab1_build_demo(system_prompt: str, default_temperature: float = 0.7):
                 label="Temperature",
             ),
         ],
-        outputs=gr.Textbox(label="Model response"),
+        outputs=gr.Textbox(label="Model response", lines=12),
         title="Lab 1: Hello, API",
         description="Your first LLM-powered web app.",
     )
