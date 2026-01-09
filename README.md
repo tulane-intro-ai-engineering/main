@@ -27,6 +27,6 @@ Main repository for Intro to AI Engineering course at Tulane University
 | 13   | Project Studio                       | n/a                                                                                                                                           | n/a                                                                                                                               |
 | 14   | Project Presentations                | n/a                                                                                                                                           | n/a                                                                                                                               |
 
-**AI Usage**
+<br><br>
 
-AI was used to help generate content for this course, including ChatGPT (5.2), Cursor (2.20), and Gemini (2.5). 
+**AI Usage:** AI was used to help generate content for this course, including ChatGPT (5.2), Cursor (2.20), and Gemini (2.5). 
