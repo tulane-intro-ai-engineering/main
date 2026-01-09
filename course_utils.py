@@ -1,3 +1,29 @@
+"""
+course_utils.py - Helper functions for AI Engineering Course
+
+QUICK START FOR STUDENTS:
+========================
+
+1. Always start by running your lab's setup function:
+   >>> from course_utils import lab1_setup
+   >>> lab1_setup()
+
+2. Most functions have helpful error messages. If something breaks:
+   - Read the error message carefully
+   - It usually tells you what to do next
+   - Common fixes: run setup again, check your API key
+
+3. Need help? Check the function's docstring:
+   >>> help(lab1_generate_reply)
+
+4. Common functions you'll use:
+   - lab1_generate_reply() - Ask the AI a question
+   - get_text_embedding() - Convert text to numbers (for search)
+   - lab*_build_demo() - Create interactive web apps
+
+For more details, see the lab notebooks or ask your instructor.
+"""
+
 # course_utils.py
 # A single, week-ordered utility module for Colab notebooks.
 # Public functions (no leading "_") keep their names for notebook compatibility.
@@ -28,6 +54,16 @@ try:
     from openai import OpenAI  # type: ignore
 except Exception:
     OpenAI = None  # installed by install_core_deps
+
+
+# ============================================================
+# Constants (used throughout the course)
+# ============================================================
+
+# Common constants used throughout
+EMBEDDING_DIMENSION = 1536  # Standard size for OpenAI embeddings
+SMALL_NUMBER = 1e-12  # Used to avoid division by zero in vector normalization
+PSI_EPSILON = 1e-6  # Small value for PSI calculation stability
 
 
 # ============================================================
@@ -79,7 +115,15 @@ def _install(deps: Sequence[str]) -> None:
 
 def install_core_deps() -> None:
     """
-    Quietly installs core dependencies used throughout the course.
+    Install core dependencies used throughout the course.
+    
+    This installs:
+    - openai: For calling OpenAI's API
+    - gradio: For building interactive web apps
+    - mermaid-python: For displaying diagrams
+    
+    You usually don't need to call this directly - it's called automatically
+    by the lab setup functions.
     """
     _install(["openai", "gradio", "mermaid-python"])
 
@@ -87,9 +131,22 @@ def install_core_deps() -> None:
 def init_openai() -> None:
     """
     Prompts for OPENAI_API_KEY if not set (Colab-friendly).
+    
+    This function will ask you to enter your API key if it's not already set.
+    The key is only stored in this Colab session and won't be saved permanently.
+    
+    To get your API key:
+    1. Go to https://platform.openai.com/api-keys
+    2. Sign in or create an account
+    3. Click "Create new secret key"
+    4. Copy the key (it starts with "sk-")
+    
+    When prompted, paste your key and press Enter.
     """
     if not os.environ.get("OPENAI_API_KEY"):
-        print("Enter your OpenAI API key. It will only live in this Colab runtime.")
+        print("🔑 Enter your OpenAI API key.")
+        print("   (It will only be stored in this Colab runtime - it's safe!)")
+        print("   Get your key from: https://platform.openai.com/api-keys")
         os.environ["OPENAI_API_KEY"] = getpass.getpass("OpenAI API key: ")
         print("✅ API key set.")
     else:
@@ -99,13 +156,26 @@ def init_openai() -> None:
 def show_mermaid(graph_str: str) -> None:
     """
     Render a Mermaid diagram in notebooks.
-    Requires mermaid-python.
+    
+    This displays flowcharts and diagrams in your notebook.
+    Requires mermaid-python package (installed automatically by setup functions).
+    
+    Args:
+        graph_str: A string containing Mermaid diagram syntax
+    
+    Example:
+        >>> show_mermaid("graph TD; A[Start] --> B[End]")
     """
     try:
         from mermaid import Mermaid  # type: ignore
         from IPython.display import display  # type: ignore
     except Exception as e:
-        print("⚠️ Mermaid display requires mermaid-python and IPython:", e)
+        print(
+            "⚠️ Could not display diagram.\n"
+            "This usually means a package needs to be installed.\n"
+            "Try running: install_core_deps()\n"
+            f"Technical details: {type(e).__name__}"
+        )
         return
 
     display(Mermaid(graph_str))
@@ -126,14 +196,26 @@ def _common_setup(
     """
     Shared setup routine for all labs.
     """
+    print("🔧 Setting up your environment...")
+    print("  → Installing core packages...")
     install_core_deps()
+    
     if extra_deps:
+        print(f"  → Installing additional packages: {', '.join(extra_deps)}")
         _install(extra_deps)
+    
+    print("  → Setting random seed for reproducible results...")
     seed_everything(seed)
+    
     if require_openai_key:
+        print("  → Checking API key...")
         init_openai()
+    
     if add_main_path:
+        print("  → Adding course files to path...")
         _ensure_main_on_path()
+    
+    print("✅ Setup complete!")
 
 
 # ============================================================
@@ -172,11 +254,24 @@ def _get_client() -> "OpenAI":
     """
     global _CLIENT, _CLIENT_KEY
     if OpenAI is None:
-        raise RuntimeError("OpenAI SDK not installed. Run install_core_deps().")
+        raise RuntimeError(
+            "❌ OpenAI SDK not installed!\n\n"
+            "To fix this:\n"
+            "1. Run your lab's setup function (e.g., lab1_setup())\n"
+            "2. Or run: install_core_deps()\n\n"
+            "This will automatically install the required packages."
+        )
 
     api_key = os.getenv("OPENAI_API_KEY", "").strip()
     if not api_key:
-        raise RuntimeError("OPENAI_API_KEY is not set.")
+        raise RuntimeError(
+            "❌ OpenAI API key is missing!\n\n"
+            "To fix this:\n"
+            "1. Run your lab's setup function (e.g., lab1_setup())\n"
+            "2. When prompted, paste your API key\n"
+            "3. Get your key from: https://platform.openai.com/api-keys\n\n"
+            "The key will only be stored in this Colab session (it's safe)."
+        )
 
     # Refresh cache if key changed (common in Colab).
     if _CLIENT is None or _CLIENT_KEY != api_key:
@@ -250,8 +345,14 @@ def _chat_one_shot(
 
 
 def _normalize(v: np.ndarray) -> np.ndarray:
+    """
+    Normalize a vector to unit length.
+    
+    This makes vectors easier to compare (like converting to percentages).
+    The small number prevents division by zero errors.
+    """
     v = np.asarray(v, dtype=np.float32)
-    return v / (np.linalg.norm(v) + 1e-12)
+    return v / (np.linalg.norm(v) + SMALL_NUMBER)
 
 
 def _embed_text(text: str, model: str = "text-embedding-3-small") -> np.ndarray:
@@ -263,23 +364,48 @@ def _embed_text(text: str, model: str = "text-embedding-3-small") -> np.ndarray:
 
 def get_text_embedding(text: str, model: str = "text-embedding-3-small") -> np.ndarray:
     """
-    Public embedding helper used across labs.
-
+    Convert text into a list of numbers (an "embedding").
+    
+    Think of this like converting words into coordinates on a map.
+    Similar words end up close together, which helps with search and comparison.
+    
+    Args:
+        text: The text to convert (can be empty, but that's not useful)
+        model: Which embedding model to use (usually don't change this)
+    
     Returns:
-      np.ndarray normalized to unit length.
-
-    If API fails, returns a deterministic pseudo-random vector (teaching fallback).
+        An array of numbers representing the text. The array has 1536 numbers
+        (for text-embedding-3-small) and is normalized to unit length.
+    
+    Example:
+        >>> embedding = get_text_embedding("hello world")
+        >>> print(f"Embedding has {len(embedding)} numbers")
+        >>> print(f"First few numbers: {embedding[:5]}")
+    
+    Note:
+        If the API call fails, this function returns a deterministic random vector
+        as a fallback (for teaching/demo purposes only).
     """
     text = "" if text is None else str(text)
+    
     try:
         return _embed_text(text, model=model)
+    except RuntimeError as e:
+        # API key or connection issues
+        print("❌ Could not connect to OpenAI API.")
+        print("   Make sure you've run your lab's setup function and entered your API key.")
+        print(f"   Technical error: {e}")
+        print("⚠️ Using random numbers as fallback (for demo purposes only).")
     except Exception as e:
-        print(e)
-        print("⚠️ Embedding call failed, returning random vector for fallback.")
-        np.random.seed(abs(hash(text)) % (2**32))
-        # Typical embedding dims; doesn't have to match exactly for toy demos.
-        vec = np.random.rand(1536).astype(np.float32)
-        return _normalize(vec)
+        # Other unexpected errors
+        print(f"⚠️ Unexpected error: {type(e).__name__}")
+        print(f"   {e}")
+        print("⚠️ Using random numbers as fallback (for demo purposes only).")
+    
+    # Fallback: deterministic random vector
+    np.random.seed(abs(hash(text)) % (2**32))
+    vec = np.random.rand(EMBEDDING_DIMENSION).astype(np.float32)
+    return _normalize(vec)
 
 
 # ============================================================
@@ -293,9 +419,17 @@ def _words(text: str) -> List[str]:
 def _chunk_text_words(text: str, chunk_size: int, overlap: int) -> List[str]:
     w = _words(text)
     if chunk_size <= 0:
-        raise ValueError("chunk_size must be > 0")
+        raise ValueError(
+            "❌ 'chunk_size' must be greater than 0.\n"
+            "This is how many words to put in each chunk.\n"
+            "Example: chunk_size=100 means each chunk has up to 100 words."
+        )
     if overlap < 0 or overlap >= chunk_size:
-        raise ValueError("overlap must satisfy 0 <= overlap < chunk_size")
+        raise ValueError(
+            "❌ 'overlap' must be between 0 and chunk_size (exclusive).\n"
+            "Overlap is how many words to repeat between chunks.\n"
+            f"Example: if chunk_size={chunk_size}, overlap must be between 0 and {chunk_size-1}."
+        )
 
     chunks: List[str] = []
     start = 0
@@ -376,13 +510,33 @@ def lab1_setup() -> None:
 
 
 def lab1_generate_reply(
-    user_prompt: str,
-    system_prompt: str,
-    temperature: float = 0.7,
-    model: str = "gpt-4o-mini",
+    user_prompt: str,  # REQUIRED: Your question
+    system_prompt: str,  # REQUIRED: How the AI should behave
+    temperature: float = 0.7,  # OPTIONAL: 0.0-1.5, default is good for most cases
+    model: str = "gpt-4o-mini",  # OPTIONAL: Usually don't change this
 ) -> str:
     """
-    Simple one-shot chat completion for Lab 1.
+    Ask the AI a question and get a response.
+    
+    This is like sending a text message to an AI assistant.
+    
+    Args:
+        user_prompt: Your question or message (e.g., "What is AI?")
+        system_prompt: Instructions for how the AI should behave 
+                      (e.g., "You are a friendly teacher")
+        temperature: How creative the AI should be 
+                    (0.0 = predictable/consistent, 1.5 = creative/varied)
+        model: Which AI model to use (you usually don't need to change this)
+    
+    Returns:
+        The AI's response as text
+    
+    Example:
+        >>> reply = lab1_generate_reply(
+        ...     user_prompt="What is machine learning?",
+        ...     system_prompt="You are a helpful tutor."
+        ... )
+        >>> print(reply)
     """
     return _chat_one_shot(
         user_prompt=user_prompt,
@@ -395,20 +549,40 @@ def lab1_generate_reply(
 def lab1_build_demo(system_prompt: str, default_temperature: float = 0.7):
     """
     Build a minimal Gradio Interface for Lab 1.
+    
+    This creates an interactive web app where you can chat with the AI.
+    Users can type prompts and adjust the temperature slider.
+    
+    Args:
+        system_prompt: Instructions for how the AI should behave
+        default_temperature: Default temperature value for the slider (0.0-1.5)
+    
+    Returns:
+        A Gradio interface that you can display with .launch()
+    
+    Example:
+        >>> demo = lab1_build_demo("You are a friendly tutor")
+        >>> demo.launch()
     """
     import gradio as gr  # local import for Colab reliability
 
     def _fn(user_prompt: str, temperature: float):
         if not (user_prompt or "").strip():
-            return "Please enter a non-empty prompt."
+            return "❌ Please enter a non-empty prompt."
         try:
             return lab1_generate_reply(
                 user_prompt=user_prompt,
                 system_prompt=system_prompt,
                 temperature=temperature,
             )
+        except RuntimeError as e:
+            return (
+                f"❌ Error: Could not connect to OpenAI API.\n"
+                f"Make sure you've run lab1_setup() and entered your API key.\n"
+                f"Technical details: {type(e).__name__}"
+            )
         except Exception as e:
-            return f"⚠️ Error: {type(e).__name__}"
+            return f"⚠️ Error: {type(e).__name__}. Try running lab1_setup() again."
 
     demo = gr.Interface(
         fn=_fn,
@@ -471,24 +645,95 @@ def lab2_generate_samples(
     model: str = "gpt-4o-mini",
 ):
     """
-    Generate multiple completions for a given prompt across temperature settings.
-    Returns a list of dicts with {temperature, output}.
+    Generate multiple AI responses to the same prompt at different temperatures.
+    
+    This helps you see how temperature affects creativity. You'll get multiple
+    responses for each temperature setting, so you can compare them.
+    
+    Args:
+        prompt: Your question (must be a string, not empty)
+        temperatures: List of temperature values to try (usually between 0 and 2)
+                     Example: [0.5, 1.0, 1.5]
+        n_per_temp: How many responses to generate for each temperature
+                   (default is 5, so you'll get 5 responses per temperature)
+        model: Which AI model to use (usually don't change this)
+    
+    Returns:
+        A list of dictionaries, each with:
+        - 'temperature': The temperature used (float)
+        - 'output': The AI's response (string)
+    
+    Example:
+        >>> results = lab2_generate_samples(
+        ...     prompt="Write a haiku about coding",
+        ...     temperatures=[0.5, 1.0],
+        ...     n_per_temp=3
+        ... )
+        >>> for r in results:
+        ...     print(f"Temp {r['temperature']}: {r['output']}")
     """
+    # Validate inputs with helpful messages
+    if not prompt or not isinstance(prompt, str):
+        raise ValueError(
+            "❌ 'prompt' must be a non-empty string.\n"
+            "Example: prompt='What is AI?'"
+        )
+    
+    if not isinstance(temperatures, list) or len(temperatures) == 0:
+        raise ValueError(
+            "❌ 'temperatures' must be a list of numbers.\n"
+            "Example: temperatures=[0.5, 1.0, 1.5]"
+        )
+    
+    if n_per_temp < 1:
+        raise ValueError(
+            "❌ 'n_per_temp' must be at least 1.\n"
+            "This is how many responses to generate for each temperature."
+        )
+    
     results: List[Dict[str, Any]] = []
+    total_calls = len(temperatures) * n_per_temp
+    call_count = 0
+    
+    print(f"🔄 Generating {total_calls} responses...")
+    
     for T in temperatures:
         for i in range(int(n_per_temp)):
+            call_count += 1
+            print(f"  [{call_count}/{total_calls}] Temperature {T}, sample {i+1}...", end=" ")
+            
             try:
                 output = _chat_one_shot(user_prompt=prompt, model=model, temperature=float(T)).strip()
                 results.append({"temperature": float(T), "output": output})
+                print("✅")
                 time.sleep(0.2)
             except Exception as e:
-                print(f"⚠️ API call failed at T={T}, sample {i+1}: {e}")
+                print(f"❌ Failed: {e}")
+    
+    print(f"✅ Generated {len(results)} responses!")
     return results
 
 
 def lab2_measure_diversity(results: List[Dict[str, Any]]):
     """
-    Metric: unique outputs / total outputs (per temperature).
+    Measure how different the AI's responses are at each temperature.
+    
+    This calculates a "diversity score" for each temperature:
+    - Score of 1.0 = all responses are different (high diversity)
+    - Score of 0.0 = all responses are the same (low diversity)
+    
+    Args:
+        results: List of dictionaries from lab2_generate_samples()
+                Each dict should have 'temperature' and 'output' keys
+    
+    Returns:
+        A dictionary mapping temperature to diversity score
+        Example: {0.5: 0.8, 1.0: 1.0, 1.5: 0.9}
+    
+    Example:
+        >>> results = lab2_generate_samples("Write a joke", temperatures=[0.5, 1.0])
+        >>> diversity = lab2_measure_diversity(results)
+        >>> print(f"At temperature 1.0, diversity is {diversity[1.0]}")
     """
     diversity_scores: Dict[float, float] = {}
     grouped: Dict[float, List[str]] = {}
@@ -507,6 +752,16 @@ def lab2_measure_diversity(results: List[Dict[str, Any]]):
 def lab2_build_demo(default_prompt: str = "Describe a sunrise.", default_temperature: float = 1.0):
     """
     Build a simple Gradio app for interactive temperature exploration.
+    
+    This creates a web interface where you can experiment with different
+    temperature values and see how they affect the AI's responses.
+    
+    Args:
+        default_prompt: The default text in the prompt box
+        default_temperature: The default temperature value for the slider
+    
+    Returns:
+        A Gradio interface that you can display with .launch()
     """
     import gradio as gr
 
@@ -517,8 +772,14 @@ def lab2_build_demo(default_prompt: str = "Describe a sunrise.", default_tempera
                 model="gpt-4o-mini",
                 temperature=float(temperature),
             )
+        except RuntimeError as e:
+            return (
+                f"❌ Error: Could not connect to OpenAI API.\n"
+                f"Make sure you've run lab2_setup() and entered your API key.\n"
+                f"Technical details: {type(e).__name__}"
+            )
         except Exception as e:
-            return f"⚠️ Error: {type(e).__name__}"
+            return f"⚠️ Error: {type(e).__name__}. Try running lab2_setup() again."
 
     demo = gr.Interface(
         fn=generate,
@@ -584,7 +845,23 @@ def lab4_setup() -> None:
 
 def simple_keyword_search(query: str, docs: List[str]) -> List[str]:
     """
-    Return documents containing the first query word (case-insensitive).
+    Simple keyword search: find documents containing the first word of your query.
+    
+    This is a basic search function that looks for exact word matches.
+    It's useful for comparing with more advanced semantic search methods.
+    
+    Args:
+        query: Your search query (e.g., "Tulane University")
+        docs: List of documents to search through
+    
+    Returns:
+        List of documents that contain the first word of the query
+        (or ["(no matches found)"] if nothing matches)
+    
+    Example:
+        >>> docs = ["Tulane is in New Orleans", "Jazz is music", "New Orleans has jazz"]
+        >>> results = simple_keyword_search("Tulane location", docs)
+        >>> print(results)
     """
     q = (query or "").lower().split()
     if not q:
@@ -596,12 +873,29 @@ def simple_keyword_search(query: str, docs: List[str]) -> List[str]:
 
 def lab4_generate_visualization(texts: List[str], model: str = "text-embedding-3-small") -> np.ndarray:
     """
-    Generate and display a 2D PCA projection of embeddings for a list of text strings.
-    Returns 2D PCA coordinates.
+    Generate and display a 2D visualization of text embeddings.
+    
+    This converts texts to embeddings, then projects them to 2D so you can
+    see which texts are similar (they'll be close together on the plot).
+    
+    Args:
+        texts: List of text strings to visualize
+        model: Which embedding model to use (usually don't change this)
+    
+    Returns:
+        A 2D numpy array with coordinates for each text
+        (shape: [number of texts, 2])
+    
+    Example:
+        >>> texts = ["cat", "dog", "car", "truck"]
+        >>> coords = lab4_generate_visualization(texts)
+        >>> # A plot will appear showing "cat" and "dog" close together,
+        >>> # and "car" and "truck" close together
     """
     try:
         from sklearn.decomposition import PCA  # type: ignore
     except Exception:
+        print("  → Installing scikit-learn for visualization...")
         _install(["scikit-learn"])
         from sklearn.decomposition import PCA  # type: ignore
 
@@ -609,6 +903,7 @@ def lab4_generate_visualization(texts: List[str], model: str = "text-embedding-3
 
     print(f"🔢 Generating embeddings for {len(texts)} texts...")
     embeddings = [get_text_embedding(t, model=model) for t in texts]
+    print("  → Projecting to 2D for visualization...")
 
     pca = PCA(n_components=2)
     proj = pca.fit_transform(np.array(embeddings, dtype=np.float32))
@@ -625,9 +920,33 @@ def lab4_generate_visualization(texts: List[str], model: str = "text-embedding-3
     return proj
 
 
-def lab4_build_search_demo(search_fn: Callable[[str, List[str]], Any], docs: Optional[List[str]] = None):
+def lab4_build_search_demo(
+    search_fn: Callable[[str, List[str]], Any],  # A function that takes (query, docs) and returns results
+    docs: Optional[List[str]] = None,  # Optional list of documents (or None)
+):
     """
-    Build the interactive Gradio demo for Lab 4.
+    Build an interactive search demo.
+    
+    This creates a web interface where you can test your search function.
+    Users can type queries and see the search results.
+    
+    Args:
+        search_fn: Your search function. It should take two inputs:
+                   - query (a string like "What is AI?")
+                   - docs (a list of strings, each is a document)
+                   And return search results (usually a list of strings)
+        docs: Optional list of documents to search through.
+              If you don't provide this, it uses example documents.
+    
+    Returns:
+        A Gradio interface that you can display with .launch()
+    
+    Example:
+        >>> def my_search(query, docs):
+        ...     # Your search implementation here
+        ...     return results
+        >>> demo = lab4_build_search_demo(my_search)
+        >>> demo.launch()
     """
     import gradio as gr
 
@@ -674,12 +993,29 @@ def lab5_setup() -> None:
 
 def get_sample_corpus(name: str = "mini_wiki") -> List[str]:
     """
-    Returns a small corpus for RAG experiments.
+    Get a small collection of example documents for RAG experiments.
+    
+    This provides sample texts about various topics that you can use
+    to test your RAG (Retrieval-Augmented Generation) system.
+    
+    Args:
+        name: Which corpus to use (currently only "mini_wiki" is supported)
+    
+    Returns:
+        A list of text strings, each is a document about a different topic
+    
+    Example:
+        >>> corpus = get_sample_corpus()
+        >>> print(f"Got {len(corpus)} documents")
+        >>> print(corpus[0])  # First document
     """
     import textwrap
 
     if name != "mini_wiki":
-        raise ValueError("Only 'mini_wiki' corpus is supported for now.")
+        raise ValueError(
+            "❌ Only 'mini_wiki' corpus is supported for now.\n"
+            "Use: get_sample_corpus('mini_wiki') or just get_sample_corpus()"
+        )
 
     corpus = [
         textwrap.dedent("""
@@ -716,8 +1052,24 @@ def lab5_generate_answer(
     max_tokens: int = 150,
 ) -> str:
     """
-    Generates a grounded answer using a small LLM call.
-    If the API call fails, returns a simple offline fallback.
+    Generate an answer to a question using provided context.
+    
+    This is used in RAG (Retrieval-Augmented Generation) systems.
+    The AI answers based ONLY on the context you provide, not its training data.
+    
+    Args:
+        query: The question to answer
+        context: The text passages that contain the answer
+        model: Which AI model to use (usually don't change this)
+        max_tokens: Maximum length of the answer (default 150 is good for short answers)
+    
+    Returns:
+        The AI's answer as a string
+    
+    Example:
+        >>> context = "The Eiffel Tower is in Paris, France."
+        >>> answer = lab5_generate_answer("Where is the Eiffel Tower?", context)
+        >>> print(answer)
     """
     system_prompt = (
         "You are a helpful teaching assistant answering student questions. "
@@ -747,7 +1099,30 @@ def lab5_generate_answer(
 
 def lab5_build_demo(retrieve_fn, chunk_fn, embed_fn):
     """
-    Creates a Gradio interface for experimenting with RAG retrieval.
+    Create an interactive demo for experimenting with RAG retrieval.
+    
+    This builds a web interface where you can:
+    - Ask questions
+    - Adjust chunk size and top-k parameters
+    - See the retrieved context and generated answer
+    
+    Args:
+        retrieve_fn: Your retrieval function that takes (query, chunks, embeddings, k)
+                    and returns a list of retrieved chunk texts
+        chunk_fn: Your chunking function that takes (text, chunk_size, overlap)
+                  and returns a list of text chunks
+        embed_fn: Your embedding function that takes a list of texts
+                  and returns a list of embedding vectors
+    
+    Returns:
+        A Gradio interface that you can display with .launch()
+    
+    Example:
+        >>> def my_retrieve(query, chunks, embeddings, k):
+        ...     # Your retrieval implementation
+        ...     return retrieved_chunks
+        >>> demo = lab5_build_demo(my_retrieve, my_chunk, my_embed)
+        >>> demo.launch()
     """
     import gradio as gr
 
@@ -843,7 +1218,25 @@ def lab6_build_retriever(
 ) -> Lab6Retriever:
     """
     Build a simple embedding-based retriever over chunked documents.
-    Uses get_text_embedding(text).
+    
+    This function:
+    1. Splits documents into smaller chunks
+    2. Converts each chunk to an embedding (vector of numbers)
+    3. Creates a retriever object you can use to search
+    
+    Args:
+        corpus: List of documents, each is a dict with at least 'text' and 'doc_id' keys
+        chunk_size: How many words per chunk (default 60)
+        overlap: How many words to overlap between chunks (default 15)
+        top_k: How many results to return when searching (default 4)
+    
+    Returns:
+        A Lab6Retriever object that you can use with lab6_rag_retrieve()
+    
+    Example:
+        >>> corpus = lab6_get_corpus()
+        >>> retriever = lab6_build_retriever(corpus, chunk_size=50, top_k=3)
+        >>> results = lab6_rag_retrieve("on-call policy", retriever)
     """
     chunks: List[Dict[str, Any]] = []
     for d in corpus:
@@ -864,8 +1257,26 @@ def lab6_build_retriever(
 
 def lab6_rag_retrieve(query: str, retriever: Lab6Retriever) -> Dict[str, Any]:
     """
-    Retrieve top-k passages for a query.
-    Returns dict: {"passages": [str, ...], "scores": [float, ...]}
+    Find the most relevant documents for a query.
+    
+    This searches through the retriever's documents and finds the ones
+    most similar to your query using embeddings.
+    
+    Args:
+        query: Your search question
+        retriever: A Lab6Retriever object (created with lab6_build_retriever)
+    
+    Returns:
+        A dictionary with two keys:
+        - 'passages': List of relevant text passages (strings)
+        - 'scores': List of similarity scores (numbers, higher = more relevant)
+    
+    Example:
+        >>> retriever = lab6_build_retriever(corpus)
+        >>> result = lab6_rag_retrieve("What is the on-call policy?", retriever)
+        >>> print("Found", len(result['passages']), "relevant passages")
+        >>> for passage in result['passages']:
+        ...     print(passage)
     """
     q = _normalize(get_text_embedding(query)).astype(np.float32)
     sims = retriever.X @ q
@@ -884,8 +1295,24 @@ def lab6_rag_retrieve(query: str, retriever: Lab6Retriever) -> Dict[str, Any]:
 
 def lab6_calculator(expression: str) -> Dict[str, Any]:
     """
-    A tiny calculator tool.
-    Supports basic arithmetic; rejects unexpected characters.
+    A simple calculator tool for basic arithmetic.
+    
+    This is used as an example "tool" that an AI agent can call.
+    It only allows safe math operations (no code execution).
+    
+    Args:
+        expression: A math expression like "2 + 2" or "(10 + 5) * 3"
+    
+    Returns:
+        A dictionary with either:
+        - {"result": number} if the calculation succeeded
+        - {"error": "error message"} if something went wrong
+    
+    Example:
+        >>> result = lab6_calculator("2 + 2")
+        >>> print(result)  # {"result": 4}
+        >>> result = lab6_calculator("10 / 0")
+        >>> print(result)  # {"error": "..."}
     """
     return _safe_calc(expression)
 
@@ -897,8 +1324,25 @@ def lab6_generate_answer(
     temperature: float = 0.2,
 ) -> str:
     """
-    Generate an answer (optionally grounded in retrieved passages).
-    If OPENAI_API_KEY is missing, returns a safe placeholder.
+    Generate an answer to a question, optionally using retrieved passages.
+    
+    If passages are provided, the AI will answer based ONLY on those passages.
+    If no passages are provided, the AI answers from its general knowledge.
+    
+    Args:
+        question: The question to answer
+        passages: Optional list of text passages to use as context
+                 (if provided, AI will only use information from these)
+        model: Which AI model to use (usually don't change this)
+        temperature: How creative the answer should be (0.2 = focused, higher = more creative)
+    
+    Returns:
+        The AI's answer as a string
+    
+    Example:
+        >>> passages = ["The on-call policy requires manager approval for interns."]
+        >>> answer = lab6_generate_answer("Can interns join on-call?", passages)
+        >>> print(answer)
     """
     client = _openai_client_optional()
     if client is None:
@@ -1206,9 +1650,21 @@ def lab8_setup() -> None:
 
 class TinyMemory:
     """
-    Minimal embedding memory store:
-    - add(text, tag="")
-    - search(query, k=3) -> list of notes dicts
+    A simple memory system for AI agents.
+    
+    This stores notes and can search for relevant ones using embeddings.
+    Think of it like a smart notebook that finds related entries.
+    
+    Methods:
+        add(text, tag=""): Add a note to memory
+        search(query, k=3): Find the k most relevant notes for a query
+    
+    Example:
+        >>> memory = TinyMemory()
+        >>> memory.add("User likes Python", tag="preference")
+        >>> memory.add("Project deadline is Feb 1", tag="project")
+        >>> results = memory.search("when is the deadline")
+        >>> print(results[0]['text'])  # "Project deadline is Feb 1"
     """
     def __init__(self):
         self.notes: List[Dict[str, str]] = []
@@ -1242,8 +1698,23 @@ def lab8_answer_with_optional_memory(
     model: str = "openai/gpt-4o-mini",
 ) -> str:
     """
-    Answer using DSPy LM if available, else fallback.
-    Keeps prompts short.
+    Generate an answer to a question, optionally using memory context.
+    
+    If memory_text is provided, the AI will use that information when answering.
+    This is used in agents that have memory capabilities.
+    
+    Args:
+        question: The question to answer
+        memory_text: Optional text from memory that might be relevant
+        model: Which AI model to use (usually don't change this)
+    
+    Returns:
+        The AI's answer, or a fallback message if the model isn't configured
+    
+    Example:
+        >>> memory = "User prefers short answers. Project deadline is Feb 1."
+        >>> answer = lab8_answer_with_optional_memory("When is the deadline?", memory)
+        >>> print(answer)
     """
     dspy, lm = _try_make_dspy_lm(model=model)
     if lm is None:
@@ -1469,7 +1940,7 @@ def drift_psi_histogram(
     feature_a: Sequence[float],
     feature_b: Sequence[float],
     bins: Sequence[float],
-    epsilon: float = 1e-6,
+    epsilon: float = PSI_EPSILON,
 ) -> float:
     """
     PSI-style drift on a 1D feature using discrete bins.
@@ -1543,18 +2014,35 @@ def lab11_generate_reply(
     model: Optional[str] = None,
 ) -> str:
     """
-    Minimal, student-friendly LLM call.
-    Keeps API details out of the notebook.
+    Simple way to chat with the AI - just ask a question!
+    
+    This is a student-friendly wrapper that handles errors gracefully.
+    
+    Args:
+        user_prompt: Your question or message
+        system_prompt: How the AI should behave (default is helpful teaching assistant)
+        temperature: How creative the AI should be (0.2 = focused, higher = more creative)
+        model: Which AI model to use (usually don't change this)
+    
+    Returns:
+        The AI's response, or an error message if something went wrong
+    
+    Example:
+        >>> reply = lab11_generate_reply("What is machine learning?")
+        >>> print(reply)
     """
     user_prompt = safe_str(user_prompt).strip()
     if not user_prompt:
-        return "ERROR: empty input"
+        return "❌ ERROR: Empty input. Please enter a question or message."
 
     if not _have_openai_key():
         return (
-            "ERROR: OPENAI_API_KEY is not set.\n\n"
-            "In Colab, set it in the environment or via your instructor's setup.\n"
-            "Ask your instructor if you're using a proxy key setup."
+            "❌ ERROR: OpenAI API key is not set.\n\n"
+            "To fix this:\n"
+            "1. Run your lab's setup function (e.g., lab11_setup())\n"
+            "2. When prompted, paste your API key\n"
+            "3. Get your key from: https://platform.openai.com/api-keys\n\n"
+            "If you're using a proxy key setup, ask your instructor for help."
         )
 
     model_name = model or os.getenv("OPENAI_MODEL") or "gpt-4o-mini"
@@ -1566,8 +2054,21 @@ def lab11_generate_reply(
             model=model_name,
             temperature=float(temperature),
         )
+    except RuntimeError as e:
+        return (
+            f"❌ ERROR: Could not connect to OpenAI API.\n\n"
+            f"Technical error: {type(e).__name__}\n"
+            f"Make sure you've set your API key correctly.\n"
+            f"If the problem persists, try reducing the input size."
+        )
     except Exception as e:
-        return f"ERROR: model call failed ({type(e).__name__}). Try again or reduce input size."
+        return (
+            f"❌ ERROR: Model call failed ({type(e).__name__}).\n\n"
+            f"Try:\n"
+            f"1. Reducing the input size\n"
+            f"2. Checking your internet connection\n"
+            f"3. Running your setup function again"
+        )
 
 
 def lab11_build_demo(handler_fn: Callable[[str, bool], str]):
