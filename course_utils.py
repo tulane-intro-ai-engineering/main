@@ -24,10 +24,6 @@ QUICK START FOR STUDENTS:
 For more details, see the lab notebooks or ask your instructor.
 """
 
-# course_utils.py
-# A single, week-ordered utility module for Colab notebooks.
-# Public functions (no leading "_") keep their names for notebook compatibility.
-
 from __future__ import annotations
 
 from dataclasses import dataclass
