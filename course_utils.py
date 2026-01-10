@@ -33,7 +33,6 @@ import math
 import numpy as np
 import os
 from pathlib import Path
-from pydantic.warnings import PydanticSerializationUnexpectedValue
 
 import random
 import re
@@ -46,7 +45,8 @@ import warnings
 
 warnings.filterwarnings(
     "ignore",
-    category=PydanticSerializationUnexpectedValue,
+    message=r"^Pydantic serializer warnings:.*",
+    category=UserWarning,
 )
 
 try:
