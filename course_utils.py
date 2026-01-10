@@ -30,16 +30,24 @@ from dataclasses import dataclass
 import getpass
 import json
 import math
+import numpy as np
 import os
 from pathlib import Path
+from pydantic.warnings import PydanticSerializationUnexpectedValue
+
 import random
 import re
 import sys
 import subprocess
 import time
 from typing import Any, Dict, List, Callable, Optional, Sequence, Tuple
+import warnings
 
-import numpy as np
+
+warnings.filterwarnings(
+    "ignore",
+    category=PydanticSerializationUnexpectedValue,
+)
 
 try:
     import gradio as gr  # type: ignore
@@ -1157,7 +1165,7 @@ def lab6_setup() -> None:
     """
     Setup for Lab 6.
     """
-    _common_setup(seed=42, extra_deps=None, add_main_path=True, require_openai_key=True)
+    _common_setup(seed=42, extra_deps=['dspy'], add_main_path=True, require_openai_key=True)
     print("✅ lab6_setup complete — ready.")
 
 
