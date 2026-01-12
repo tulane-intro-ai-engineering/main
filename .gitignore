@@ -1,3 +1,8 @@
+lectures/old/
+labs/old/
+lectures/solutions/
+labs/solutions/
+projects/templates/solutions/
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
