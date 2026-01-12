@@ -22,6 +22,8 @@
   * Allow only the models you want students to use
   * Set reasonable **rate limits**
   * Set **budget alerts** (note: alerts/soft thresholds are for monitoring)
+ 
+* You can also use [setup_student_openai.ipynb](https://github.com/tulane-intro-ai-engineering/main/blob/main/instructor/setup_student_openai.ipynb) to set some of the rate limits.
 
 5. **Invite students**
 
