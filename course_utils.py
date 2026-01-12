@@ -1433,7 +1433,7 @@ def lab6_build_demo(
             gr.Textbox(label="Chosen tool"),
             gr.Textbox(label="Tool trace"),
             gr.Textbox(label="Tool output (JSON)"),
-            gr.Textbox(label="Answer"),
+            gr.Textbox(label="Answer", lines=12),
         ],
         title="Lab 6: Tool-Choosing Agent (Calculator vs RAG)",
         description="Enter a question. The agent chooses a tool, calls it, and returns an answer + trace.",
@@ -1632,7 +1632,7 @@ def lab7_build_demo(
             gr.Textbox(label="Chosen tool"),
             gr.Textbox(label="Sources used"),
             gr.Textbox(label="Tool output"),
-            gr.Textbox(label="Answer"),
+            gr.Textbox(label="Answer", lines=12),
         ],
         title="Lab 7: Red-Team Playground",
         description="Try prompt injection through different surfaces: user, retrieved docs, tool output.",
@@ -1758,7 +1758,7 @@ def lab8_build_demo(
         outputs=[
             gr.Checkbox(label="Agent used memory?"),
             gr.Textbox(label="Retrieved notes"),
-            gr.Textbox(label="Answer"),
+            gr.Textbox(label="Answer", lines=12),
         ],
         title="Lab 8: Memory-Backed Agent (minimal)",
     )
