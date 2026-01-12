@@ -298,14 +298,14 @@ def _chat_text(
     client = _get_client()
     kwargs: Dict[str, Any] = {
         "model": model,
-        "messages": messages,
+        "input": messages,
         "temperature": float(temperature),
     }
     if max_tokens is not None:
         kwargs["max_tokens"] = int(max_tokens)
 
-    resp = client.chat.completions.create(**kwargs)
-    return (resp.choices[0].message.content or "").strip()
+    resp = client.responses.create(**kwargs)
+    return (resp.output_text or "").strip()
 
 
 def _chat_with_usage(
@@ -321,14 +321,14 @@ def _chat_with_usage(
     client = _get_client()
     kwargs: Dict[str, Any] = {
         "model": model,
-        "messages": messages,
+        "input": messages,
         "temperature": float(temperature),
     }
     if max_tokens is not None:
         kwargs["max_tokens"] = int(max_tokens)
 
-    resp = client.chat.completions.create(**kwargs)
-    text = (resp.choices[0].message.content or "").strip()
+    resp = client.responses.create(**kwargs)
+    text = (resp.output_text or "").strip()
     total_tokens = getattr(getattr(resp, "usage", None), "total_tokens", None)
     return text, total_tokens
 
@@ -1370,7 +1370,7 @@ def lab6_generate_answer(
     user = f"{context_block}QUESTION: {question}\nANSWER:"
 
     try:
-        resp = client.chat.completions.create(
+        resp = client.responses.create(
             model=model,
             messages=[
                 {"role": "system", "content": system},
@@ -1378,7 +1378,7 @@ def lab6_generate_answer(
             ],
             temperature=float(temperature),
         )
-        return (resp.choices[0].message.content or "").strip()
+        return (resp.output_text or "").strip()
     except Exception as e:
         return f"⚠️ OpenAI call failed: {type(e).__name__}"
 
