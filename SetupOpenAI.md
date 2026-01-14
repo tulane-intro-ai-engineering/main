@@ -17,7 +17,7 @@
 
 4. **Use it in your dev environment (don’t paste into code)**
 
-* Never commit keys to GitHub.
+* Never commit keys to GitHub or anywhere else that is publicly viewable.
 * The first cell in each lecture/lab notebook will prompt you to paste in this key.
 
 5. **If your key is exposed**
