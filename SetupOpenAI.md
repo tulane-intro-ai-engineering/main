@@ -25,3 +25,8 @@
 * Tell the instructor immediately.
 * Create a new key and stop using the old one (the instructor may remove your access or rotate keys).
 
+6. **Usage**
+
+* Please be responsible in using this key.
+* Do not try to change models or use the key to fund your video generation startup ;) 
+
