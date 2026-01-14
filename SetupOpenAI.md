@@ -8,7 +8,7 @@
 
 * Log into the OpenAI Platform
 * Switch to your instructor’s **Organization**
-* Open the project named for you (e.g., `ClassName-Student-17`)
+* Open the project named for you (e.g., `firstname-lastname`)
 
 3. **Create your API key**
 
