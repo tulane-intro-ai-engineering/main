@@ -11,7 +11,6 @@ Before you begin, please make sure you have:
 
 - A **Google Account** (for Colab access)  
 - A free **OpenAI API key** (see below)  
-- Internet access and your Tulane GitHub Classroom credentials  
 
 ---
 
