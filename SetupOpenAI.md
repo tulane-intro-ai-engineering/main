@@ -13,12 +13,12 @@
 3. **Create your API key**
 
 * In your project: **API Keys** → **Create new secret key**
-* Copy it **once** and store it securely (password manager recommended).
+* Copy it **once** and store it securely on your computer.
 
 4. **Use it in your dev environment (don’t paste into code)**
 
-* Put it in an environment variable or `.env` file, e.g. `OPENAI_API_KEY=...`
 * Never commit keys to GitHub.
+* The first cell in each lecture/lab notebook will prompt you to paste in this key.
 
 5. **If your key is exposed**
 
