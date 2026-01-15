@@ -6,7 +6,7 @@
 
 2. **Open your assigned project**
 
-* Log into the OpenAI Platform
+* [Log into the OpenAI Platform](https://platform.openai.com/login)
 * Switch to your instructor’s **Organization**
 * Open the project named for you (e.g., `firstname-lastname`)
 
