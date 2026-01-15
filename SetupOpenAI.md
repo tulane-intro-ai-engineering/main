@@ -4,6 +4,8 @@
 
 * Open the email invite to join the instructor’s **Organization** and accept it.
 
+* **Be sure to join with your Tulane email; log out of any other Open AI accounts you may have**
+
 2. **Open your assigned project**
 
 * [Log into the OpenAI Platform](https://platform.openai.com/login)
