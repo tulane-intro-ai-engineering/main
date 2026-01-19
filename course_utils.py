@@ -723,8 +723,8 @@ def lab2_measure_diversity(results: List[Dict[str, Any]]):
     Measure how different the AI's responses are at each temperature.
     
     This calculates a "diversity score" for each temperature:
-    - Score of 1.0 = all responses are different (high diversity)
-    - Score of 0.0 = all responses are the same (low diversity)
+    - Score of 1.0 = all tokens are different (high diversity)
+    - Score of 0.0 = all tokens are the same (low diversity)
     
     Args:
         results: List of dictionaries from lab2_generate_samples()
@@ -746,8 +746,11 @@ def lab2_measure_diversity(results: List[Dict[str, Any]]):
         grouped.setdefault(float(r["temperature"]), []).append(str(r["output"]))
 
     for T, outputs in grouped.items():
-        unique_count = len(set(outputs))
-        total_count = len(outputs)
+        # split each output by whitespace
+        words = [word for output in outputs for word in output.split()]
+        # count unique words
+        unique_count = len(set(words))
+        total_count = len(words)
         diversity = round(unique_count / total_count, 3) if total_count else 0.0
         diversity_scores[T] = float(diversity)
     return diversity_scores
