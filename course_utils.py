@@ -794,7 +794,7 @@ def lab2_build_demo(default_prompt: str = "Describe a sunrise.", default_tempera
             gr.Textbox(value=default_prompt, label="Prompt"),
             gr.Slider(0.0, 2.0, value=default_temperature, label="Temperature"),
         ],
-        outputs="text",
+        outputs=gr.Textbox(label="Model response", lines=12),
         title="Lab 2 — Temperature Explorer",
         description="Experiment with LLM temperature: low = consistent, high = creative.",
     )
