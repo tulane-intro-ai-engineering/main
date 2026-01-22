@@ -707,7 +707,8 @@ def lab2_generate_samples(
             print(f"  [{call_count}/{total_calls}] Temperature {T}, sample {i+1}...", end=" ")
             
             try:
-                output = _chat_one_shot(user_prompt=prompt, model=model, temperature=float(T)).strip()
+                output = _chat_one_shot(user_prompt=prompt, model=model, 
+                    temperature=float(T), max_tokens=int(100)).strip()
                 results.append({"temperature": float(T), "output": output})
                 print("✅")
                 time.sleep(0.2)
@@ -778,6 +779,7 @@ def lab2_build_demo(default_prompt: str = "Describe a sunrise.", default_tempera
                 user_prompt=prompt,
                 model="gpt-4o-mini",
                 temperature=float(temperature),
+                max_tokens=100
             )
         except RuntimeError as e:
             return (
