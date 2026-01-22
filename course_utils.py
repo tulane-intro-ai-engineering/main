@@ -302,7 +302,7 @@ def _chat_text(
         "temperature": float(temperature),
     }
     if max_tokens is not None:
-        kwargs["max_tokens"] = int(max_tokens)
+        kwargs["max_output_tokens"] = int(max_tokens)
 
     resp = client.responses.create(**kwargs)
     return (resp.output_text or "").strip()
