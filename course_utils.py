@@ -966,12 +966,12 @@ def lab4_build_search_demo(
             "Crawfish season peaks in early spring.",
             "AI models learn from data patterns, not logic rules.",
         ]
-
+    doc_embs = [get_text_embedding(d) for d in docs]
     def run_search(query: str):
         if not (query or "").strip():
             return "Please enter a query."
         try:
-            results = search_fn(query, docs)
+            results = search_fn(query, doc_embs, docs)
             if isinstance(results, (list, tuple)):
                 return "\n\n".join([str(x) for x in results[:3]])
             return str(results)
@@ -981,7 +981,7 @@ def lab4_build_search_demo(
     demo = gr.Interface(
         fn=run_search,
         inputs=gr.Textbox(label="Enter a query:"),
-        outputs=gr.Textbox(label="Top results"),
+        outputs=gr.Textbox(label="Top results", lines=12),
         title="Lab 4 – Semantic Search Explorer",
         description="Run your own semantic search implementation interactively.",
     )
