@@ -971,7 +971,7 @@ def lab4_build_search_demo(
         if not (query or "").strip():
             return "Please enter a query."
         try:
-            results = search_fn(query, doc_embs, docs)
+            results = search_fn(query, docs, doc_embs)
             if isinstance(results, (list, tuple)):
                 return "\n\n".join([str(x) for x in results[:3]])
             return str(results)
