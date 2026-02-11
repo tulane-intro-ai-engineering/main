@@ -6,6 +6,8 @@
 
 * **Be sure to join with your Tulane email; log out of any other Open AI accounts you may have**
 
+* **Check spam and "Promotions" folders for the email**
+
 2. **Open your assigned project**
 
 * [Log into the OpenAI Platform](https://platform.openai.com/login)
