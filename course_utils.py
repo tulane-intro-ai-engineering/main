@@ -1082,7 +1082,8 @@ def lab5_generate_answer(
     """
     system_prompt = (
         "You are a helpful teaching assistant answering student questions. "
-        "Only use information from the provided context. If unsure, say 'I don’t know.'"
+        # removing this to induce more hallucinations ;)
+        # "Only use information from the provided context. If unsure, say 'I don’t know.'"
     )
     user_prompt = f"Context:\n{context}\n\nQuestion: {query}\nAnswer:"
 
