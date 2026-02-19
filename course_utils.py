@@ -1333,7 +1333,7 @@ def lab6_generate_answer(
     model: str = "gpt-4o-mini",
     temperature: float = 0.2,
 ) -> str:
-    """
+   """
     Generate an answer to a question, optionally using retrieved passages.
     
     If passages are provided, the AI will answer based ONLY on those passages.
@@ -1354,15 +1354,7 @@ def lab6_generate_answer(
         >>> answer = lab6_generate_answer("Can interns join on-call?", passages)
         >>> print(answer)
     """
-    client = _openai_client_optional()
-    if client is None:
-        if passages:
-            return (
-                "⚠️ (LLM not configured) Here are the retrieved passages you should use:\n\n"
-                + "\n\n".join(passages[:3])
-            )
-        return "⚠️ (LLM not configured) Please set OPENAI_API_KEY to generate answers."
-
+ 
     context_block = ""
     if passages:
         context_block = "SOURCES:\n" + "\n".join(passages) + "\n\n"
@@ -1376,17 +1368,78 @@ def lab6_generate_answer(
     user = f"{context_block}QUESTION: {question}\nANSWER:"
 
     try:
-        resp = client.responses.create(
-            model=model,
+        output_text = _chat_text(
             messages=[
                 {"role": "system", "content": system},
                 {"role": "user", "content": user},
             ],
-            temperature=float(temperature),
-        )
-        return (resp.output_text or "").strip()
+            model=model,
+            temperature=float(temperature))
+        return (output_text or "").strip()
     except Exception as e:
-        return f"⚠️ OpenAI call failed: {type(e).__name__}"
+        return f"⚠️ OpenAI call failed: {type(e).__name__} {e}"
+
+
+# def lab6_generate_answer_old(
+#     question: str,
+#     passages: Optional[List[str]] = None,
+#     model: str = "gpt-4o-mini",
+#     temperature: float = 0.2,
+# ) -> str:
+#     """
+#     Generate an answer to a question, optionally using retrieved passages.
+    
+#     If passages are provided, the AI will answer based ONLY on those passages.
+#     If no passages are provided, the AI answers from its general knowledge.
+    
+#     Args:
+#         question: The question to answer
+#         passages: Optional list of text passages to use as context
+#                  (if provided, AI will only use information from these)
+#         model: Which AI model to use (usually don't change this)
+#         temperature: How creative the answer should be (0.2 = focused, higher = more creative)
+    
+#     Returns:
+#         The AI's answer as a string
+    
+#     Example:
+#         >>> passages = ["The on-call policy requires manager approval for interns."]
+#         >>> answer = lab6_generate_answer("Can interns join on-call?", passages)
+#         >>> print(answer)
+#     """
+#     client = _openai_client_optional()
+#     if client is None:
+#         if passages:
+#             return (
+#                 "⚠️ (LLM not configured) Here are the retrieved passages you should use:\n\n"
+#                 + "\n\n".join(passages[:3])
+#             )
+#         return "⚠️ (LLM not configured) Please set OPENAI_API_KEY to generate answers."
+
+#     context_block = ""
+#     if passages:
+#         context_block = "SOURCES:\n" + "\n".join(passages) + "\n\n"
+
+#     system = (
+#         "You are a helpful course assistant. "
+#         "If SOURCES are provided, answer using ONLY those sources. "
+#         "If the sources do not contain the answer, say 'I don't know based on the provided sources.' "
+#         "Be concise."
+#     )
+#     user = f"{context_block}QUESTION: {question}\nANSWER:"
+
+#     try:
+#         resp = client.responses.create(
+#             model=model,
+#             messages=[
+#                 {"role": "system", "content": system},
+#                 {"role": "user", "content": user},
+#             ],
+#             temperature=float(temperature),
+#         )
+#         return (resp.output_text or "").strip()
+#     except Exception as e:
+#         return f"⚠️ OpenAI call failed: {type(e).__name__}"
 
 
 def lab6_default_eval_set() -> List[Dict[str, Any]]:
