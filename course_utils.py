@@ -1333,22 +1333,22 @@ def lab6_generate_answer(
     model: str = "gpt-4o-mini",
     temperature: float = 0.2,
 ) -> str:
-   """
+    """
     Generate an answer to a question, optionally using retrieved passages.
-    
+
     If passages are provided, the AI will answer based ONLY on those passages.
     If no passages are provided, the AI answers from its general knowledge.
-    
+
     Args:
         question: The question to answer
         passages: Optional list of text passages to use as context
                  (if provided, AI will only use information from these)
         model: Which AI model to use (usually don't change this)
         temperature: How creative the answer should be (0.2 = focused, higher = more creative)
-    
+
     Returns:
         The AI's answer as a string
-    
+
     Example:
         >>> passages = ["The on-call policy requires manager approval for interns."]
         >>> answer = lab6_generate_answer("Can interns join on-call?", passages)
