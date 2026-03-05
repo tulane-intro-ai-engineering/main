@@ -64,7 +64,7 @@ For each defense, record:
 
 ---
 
-## Turn-in (very short)
+## Turn-in
 
 Submit:
 
