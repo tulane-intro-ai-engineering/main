@@ -1099,7 +1099,7 @@ def lab5_generate_answer(
             max_tokens=int(max_tokens),
         ).strip()
     except Exception as e:
-        print("⚠️ OpenAI call failed. Returning simulated answer.")
+        print("⚠️ OpenAI call failed. Returning simulated answer.", e)
         # Offline fallback: a simple heuristic
         if "Paris" in context:
             return "The capital of France is Paris."
@@ -1982,24 +1982,6 @@ def drift_length_stats(texts: Sequence[str]) -> Dict[str, float]:
         "max_len": float(lengths.max()),
     }
 
-
-def drift_embedding_centroid_shift(
-    texts_a: Sequence[str],
-    texts_b: Sequence[str],
-) -> float:
-    """
-    Semantic drift via cosine distance between mean embeddings.
-    Returns: 1 - cosine_similarity(mean_a, mean_b)
-    """
-    if len(texts_a) == 0 or len(texts_b) == 0:
-        return 0.0
-
-    XA = np.vstack([_normalize(get_text_embedding(t or "")) for t in texts_a])
-    XB = np.vstack([_normalize(get_text_embedding(t or "")) for t in texts_b])
-
-    ca = _normalize(XA.mean(axis=0))
-    cb = _normalize(XB.mean(axis=0))
-    return float(1.0 - float(ca @ cb))
 
 
 def drift_psi_histogram(
