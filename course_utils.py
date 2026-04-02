@@ -1059,6 +1059,7 @@ def lab5_generate_answer(
     context: str,
     model: str = "gpt-4o-mini",
     max_tokens: int = 150,
+    system_prompt: Optional[str] = None,
 ) -> str:
     """
     Generate an answer to a question using provided context.
@@ -1071,6 +1072,7 @@ def lab5_generate_answer(
         context: The text passages that contain the answer
         model: Which AI model to use (usually don't change this)
         max_tokens: Maximum length of the answer (default 150 is good for short answers)
+        system_prompt: Optional override for system instructions (default: teaching-assistant prompt)
     
     Returns:
         The AI's answer as a string
@@ -1080,11 +1082,12 @@ def lab5_generate_answer(
         >>> answer = lab5_generate_answer("Where is the Eiffel Tower?", context)
         >>> print(answer)
     """
-    system_prompt = (
-        "You are a helpful teaching assistant answering student questions. "
-        # removing this to induce more hallucinations ;)
-        # "Only use information from the provided context. If unsure, say 'I don’t know.'"
-    )
+    if system_prompt is None:
+        system_prompt = (
+            "You are a helpful teaching assistant answering student questions. "
+            # removing this to induce more hallucinations ;)
+            # "Only use information from the provided context. If unsure, say 'I don’t know.'"
+        )
     user_prompt = f"Context:\n{context}\n\nQuestion: {query}\nAnswer:"
 
     try:
