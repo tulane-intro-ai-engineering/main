@@ -168,6 +168,12 @@
 </td>
 </tr></table>
 
+
+
+---
+
+## Sports & games
+
 <table width="100%"><tr valign="top">
 <td width="80" align="center">
 <p style="margin:0;"><a href="https://huggingface.co/spaces/IsaiahVK/NBABettingAgent"><img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f3c0.png" width="64" height="64" alt="" /></a></p>
@@ -177,10 +183,6 @@
 <p>NBA-focused assistant with explicit guardrails around responsible and legal wagering topics.</p>
 </td>
 </tr></table>
-
----
-
-## Sports & games
 
 <table width="100%"><tr valign="top">
 <td width="80" align="center">
