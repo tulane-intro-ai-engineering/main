@@ -1,6 +1,6 @@
 # Student projects
 
-Projects are grouped by theme. Each **title** links to the Hugging Face Space from `projects.xlsx` when a URL is present. Icons use [Twemoji](https://github.com/twitter/twemoji) images. Student names are omitted here.
+
 
 ## Music & media
 
