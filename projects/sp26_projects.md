@@ -111,11 +111,10 @@ One card per team project. Each **title** links to the Hugging Face Space from t
 <table><tr valign="top">
 <td width="72" align="center">
 <p style="font-size: 2rem; margin: 0 0 8px 0;">🗺️</p>
-  
   <a href="https://huggingface.co/spaces/mcaponter/nolatripplanner"><img src="https://huggingface.co/front/assets/huggingface_logo-noborder.svg" width="36" height="36" alt="Open Hugging Face Space" title="Open Hugging Face Space"/></a>
 </td>
 <td>
-<h3 style="margin-top:0;">New Orleans trip planner</h3>
+<h3 style="margin-top:0;"><a href="https://huggingface.co/spaces/mcaponter/nolatripplanner">New Orleans trip planner</a></h3>
 <p>Retrieval-augmented itinerary planning focused on New Orleans attractions and logistics.</p>
 </td>
 </tr></table>
@@ -130,19 +129,6 @@ One card per team project. Each **title** links to the Hugging Face Space from t
 <td>
 <h3 style="margin-top:0;"><a href="https://huggingface.co/spaces/Tugga/Recycle_Nola_Ai">Recycle NOLA AI</a></h3>
 <p>Local recycling coach: what goes in the bin, what doesn’t, and how to dispose safely.</p>
-</td>
-</tr></table>
-
----
-
-<table><tr valign="top">
-<td width="72" align="center">
-<p style="font-size: 2rem; margin: 0 0 8px 0;">🎙️</p>
-</td>
-<td>
-<h3 style="margin-top:0;">Read the Room</h3>
-<p>Two-microphone WAV workflow for spatial or room-aware audio analysis experiments.</p>
-<p><em>No Hugging Face Space URL was listed in <code>projects.xlsx</code> for this project.</em></p>
 </td>
 </tr></table>
 
@@ -247,19 +233,6 @@ One card per team project. Each **title** links to the Hugging Face Space from t
 <td>
 <h3 style="margin-top:0;"><a href="https://huggingface.co/spaces/AIClassz/PlaylistMatch">ConcertMatch</a></h3>
 <p>Concert and live-music discovery with personalization and multiple working retrieval paths.</p>
-</td>
-</tr></table>
-
----
-
-<table><tr valign="top">
-<td width="72" align="center">
-<p style="font-size: 2rem; margin: 0 0 8px 0;">⚖️</p>
-</td>
-<td>
-<h3 style="margin-top:0;">Fellow</h3>
-<p>Organize legal-adjacent workflows and documents—supportive tooling, not legal advice.</p>
-<p><em>No Hugging Face Space URL was listed in <code>projects.xlsx</code> for this project.</em></p>
 </td>
 </tr></table>
 
