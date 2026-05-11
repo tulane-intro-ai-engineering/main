@@ -14,16 +14,6 @@
 </td>
 </tr></table>
 
-<table width="100%"><tr valign="top">
-<td width="80" align="center">
-<p style="margin:0;"><img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f399.png" width="64" height="64" alt="" /></p>
-</td>
-<td>
-<h3 style="margin-top:0;">Read the Room</h3>
-<p>Two-microphone WAV workflow for spatial or room-aware audio analysis experiments.</p>
-<p><em>No Hugging Face Space URL was listed in <code>projects.xlsx</code> for this project.</em></p>
-</td>
-</tr></table>
 
 <table width="100%"><tr valign="top">
 <td width="80" align="center">
@@ -143,16 +133,6 @@
 </td>
 </tr></table>
 
-<table width="100%"><tr valign="top">
-<td width="80" align="center">
-<p style="margin:0;"><img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/2696.png" width="64" height="64" alt="" /></p>
-</td>
-<td>
-<h3 style="margin-top:0;">Fellow</h3>
-<p>Organize legal-adjacent workflows and documents—supportive tooling, not legal advice.</p>
-<p><em>No Hugging Face Space URL was listed in <code>projects.xlsx</code> for this project.</em></p>
-</td>
-</tr></table>
 
 ---
 
