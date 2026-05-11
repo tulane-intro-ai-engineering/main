@@ -1,7 +1,7 @@
 # Spring 2026 Student projects
 
 
-Below are links to Huggingface Space demos for projecets from Spring 2026. Projects combined RAG + agents to solve problems spanning music and charts, campus planning and scholarships, interview and career prep, markets and filings, sports and games, food, transit, and local discovery, and environment, fitness, and content-risk workflows. The course stressed deployment and safety issues -- validation, citations, guardrails, and abstention when evidence is weak. Several submissions target New Orleans or Tulane–relevant problems (recycling rules, trips, transit, course pathways), while others are research- or evaluation-forward (benchmark-style queries, sentiment and volatility tooling, paper simplification). 
+Below are links to Huggingface Space demos for projecets from Spring 2026. Projects combined RAG + agents to solve problems spanning music and charts, campus planning and scholarships, interview and career prep, markets and filings, sports and games, food, transit, and local discovery, and environment, fitness, and content-risk workflows. The course stressed deployment and safety issues -- validation, citations, guardrails, and abstention when evidence is weak. Several submissions target New Orleans or Tulane–relevant problems (recycling rules, trips, transit, course pathways), while others are research- or evaluation-forward (benchmark-style queries, sentiment and volatility tooling, paper simplification). To launch demo, click the link to re-launch the space, which may take a few seconds/minutes depending on the startup configuration required by each project.
 
 ## Music & media
 
